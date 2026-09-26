@@ -1,8 +1,9 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <title>THRIFTHEADS® — Wear It. Own It.</title>
 
@@ -12,8 +13,10 @@
 
 <body class="bg-white text-black">
 
-<!-- HEADER -->
+<!-- ================= HEADER ================= -->
+
 <header class="border-b border-black/10 sticky top-0 bg-white/95 backdrop-blur z-50">
+
   <nav class="max-w-7xl mx-auto px-5 py-4 flex items-center justify-between">
 
     <a
@@ -24,23 +27,45 @@
     </a>
 
     <div class="hidden md:flex gap-8 text-sm font-semibold uppercase tracking-wider">
-      <a href="shop.html">Shop</a>
-      <a href="shop.html?featured=1">New Drops</a>
-      <a href="#about">About</a>
+
+      <a href="shop.html">
+        Shop
+      </a>
+
+      <a href="shop.html?featured=1">
+        New Drops
+      </a>
+
+      <a href="#about">
+        About
+      </a>
+
     </div>
 
     <div class="flex gap-4 text-sm">
-      <a href="auth.html">Account</a>
-      <a href="cart.html">Cart</a>
+
+      <a href="auth.html">
+        Account
+      </a>
+
+      <a href="cart.html">
+        Cart
+      </a>
+
     </div>
 
   </nav>
+
 </header>
 
 
+<!-- ================= MAIN ================= -->
+
 <main>
 
-<!-- HERO -->
+
+<!-- ================= HERO ================= -->
+
 <section class="min-h-[78vh] bg-black text-white grid place-items-center px-6">
 
   <div class="text-center max-w-5xl">
@@ -50,7 +75,8 @@
     </p>
 
     <h1 class="font-display text-[18vw] md:text-[11rem] leading-[.8] mt-6">
-      THRIFT<br>DIFFERENT.
+      THRIFT<br>
+      DIFFERENT.
     </h1>
 
     <p class="mt-8 text-white/70 max-w-xl mx-auto">
@@ -69,7 +95,8 @@
 </section>
 
 
-<!-- NEW DROPS -->
+<!-- ================= NEW DROPS ================= -->
+
 <section class="max-w-7xl mx-auto px-5 py-20">
 
   <div class="flex items-end justify-between mb-8">
@@ -78,21 +105,34 @@
       NEW DROPS
     </h2>
 
-    <a href="shop.html" class="underline">
+    <a
+      href="shop.html"
+      class="underline"
+    >
       View all
     </a>
 
   </div>
 
+
+  <!-- Products from Supabase appear here -->
+
   <div
     id="products"
     class="grid grid-cols-2 md:grid-cols-4 gap-5"
-  ></div>
+  >
+
+    <p class="col-span-full text-neutral-500">
+      Loading products...
+    </p>
+
+  </div>
 
 </section>
 
 
-<!-- ABOUT -->
+<!-- ================= ABOUT ================= -->
+
 <section
   id="about"
   class="bg-neutral-100 px-5 py-24"
@@ -109,8 +149,9 @@
     </h2>
 
     <p class="mt-8 text-neutral-600 leading-8">
-      ThriftHeads is built around individuality: curated secondhand
-      and vintage pieces, honest condition descriptions, and
+      ThriftHeads is built around individuality:
+      curated secondhand and vintage pieces,
+      honest condition descriptions, and
       one-of-one finds.
     </p>
 
@@ -121,7 +162,8 @@
 </main>
 
 
-<!-- FOOTER -->
+<!-- ================= FOOTER ================= -->
+
 <footer class="bg-black text-white px-5 py-12">
 
   <div class="max-w-7xl mx-auto flex justify-between gap-8 flex-wrap">
@@ -132,10 +174,21 @@
 
     <div class="flex gap-6 text-sm">
 
-      <a href="shop.html">Shop</a>
-      <a href="privacy.html">Privacy</a>
-      <a href="terms.html">Terms</a>
-      <a href="returns.html">Returns</a>
+      <a href="shop.html">
+        Shop
+      </a>
+
+      <a href="privacy.html">
+        Privacy
+      </a>
+
+      <a href="terms.html">
+        Terms
+      </a>
+
+      <a href="returns.html">
+        Returns
+      </a>
 
     </div>
 
@@ -143,6 +196,8 @@
 
 </footer>
 
+
+<!-- ================= SUPABASE PRODUCT SYSTEM ================= -->
 
 <script type="module">
 
@@ -154,102 +209,131 @@ const root = document.querySelector("#products");
 
 
 /*
-=========================================================
-GET THE CORRECT PRODUCT IMAGE
-=========================================================
+========================================================
+GET PRODUCT IMAGE FROM SUPABASE STORAGE
+========================================================
 */
 
 function getProductImage(product) {
 
-  let images = Array.isArray(product.product_images)
+  const images = Array.isArray(product.product_images)
     ? [...product.product_images]
     : [];
 
 
+  // Product has no image record
+  if (!images.length) {
+    return null;
+  }
+
+
   /*
-  Primary image first.
-  If there isn't a primary image,
-  use the lowest sort_order.
+  Sort images:
+
+  1. Primary image first
+  2. Then sort_order
   */
 
   images.sort((a, b) => {
 
-    const primaryA = a.is_primary === true ? 1 : 0;
-    const primaryB = b.is_primary === true ? 1 : 0;
+    const primaryDifference =
+      Number(b.is_primary) - Number(a.is_primary);
 
-    if (primaryA !== primaryB) {
-      return primaryB - primaryA;
+    if (primaryDifference !== 0) {
+      return primaryDifference;
     }
 
-
-    const orderA =
-      Number.isFinite(Number(a.sort_order))
-        ? Number(a.sort_order)
-        : 999999;
-
-
-    const orderB =
-      Number.isFinite(Number(b.sort_order))
-        ? Number(b.sort_order)
-        : 999999;
-
-
-    return orderA - orderB;
+    return (
+      Number(a.sort_order || 0) -
+      Number(b.sort_order || 0)
+    );
 
   });
 
 
-  const image = images[0];
+  let path = images[0]?.storage_path;
 
 
-  if (!image || !image.storage_path) {
-    return "assets/logo/thrifheads-logo.png";
+  if (!path) {
+    return null;
   }
 
 
-  const path = image.storage_path;
+  path = String(path).trim();
 
 
   /*
-  If storage_path is already a complete URL,
-  don't send it through Supabase Storage again.
+  If storage_path already contains a complete URL,
+  don't modify it.
   */
 
-  if (
-    path.startsWith("http://") ||
-    path.startsWith("https://")
-  ) {
+  if (/^https?:\/\//i.test(path)) {
+
     return path;
+
   }
 
 
   /*
-  Otherwise get the public Supabase Storage URL.
+  Clean the path.
+
+  Example:
+
+  product-images/photo.jpg
+
+  becomes:
+
+  photo.jpg
   */
 
-  const { data } = supabase
-    .storage
+  path = path.replace(/^\/+/, "");
+
+  path = path.replace(
+    /^product-images\//i,
+    ""
+  );
+
+
+  /*
+  Generate the PUBLIC Supabase Storage URL.
+  */
+
+  const { data } = supabase.storage
     .from("product-images")
     .getPublicUrl(path);
 
 
-  return (
-    data?.publicUrl ||
-    "assets/logo/thrifheads-logo.png"
-  );
+  return data?.publicUrl || null;
 
 }
 
 
 /*
-=========================================================
-LOAD NEW DROPS
-=========================================================
+========================================================
+LOAD PRODUCTS
+========================================================
 */
 
 async function loadProducts() {
 
-  const { data, error } = await supabase
+  root.innerHTML = `
+    <p class="col-span-full text-neutral-500">
+      Loading products...
+    </p>
+  `;
+
+
+  /*
+  Get active products from Supabase.
+
+  Product images are loaded through the
+  product_images relationship.
+  */
+
+  const {
+    data,
+    error
+  } = await supabase
 
     .from("products")
 
@@ -258,8 +342,9 @@ async function loadProducts() {
       name,
       price,
       brand,
-      status,
+      description,
       created_at,
+
       product_images (
         storage_path,
         is_primary,
@@ -267,16 +352,14 @@ async function loadProducts() {
       )
     `)
 
-    /*
-    IMPORTANT:
-    Reserved products are still displayed.
-    */
+    .eq("status", "active")
 
-    .in("status", ["active", "reserved"])
-
-    .order("created_at", {
-      ascending: false
-    })
+    .order(
+      "created_at",
+      {
+        ascending: false
+      }
+    )
 
     .limit(8);
 
@@ -288,14 +371,23 @@ async function loadProducts() {
   if (error) {
 
     console.error(
-      "Failed to load products:",
+      "Supabase products error:",
       error
     );
 
+
     root.innerHTML = `
-      <p class="col-span-full text-red-600">
-        Failed to load products.
-      </p>
+      <div class="col-span-full border border-red-200 bg-red-50 p-5">
+
+        <p class="font-bold text-red-700">
+          Failed to load products.
+        </p>
+
+        <p class="text-sm text-red-600 mt-2">
+          ${escapeHtml(error.message)}
+        </p>
+
+      </div>
     `;
 
     return;
@@ -311,7 +403,7 @@ async function loadProducts() {
 
     root.innerHTML = `
       <p class="col-span-full text-neutral-500">
-        No new drops yet.
+        No pieces found.
       </p>
     `;
 
@@ -326,63 +418,90 @@ async function loadProducts() {
 
   root.innerHTML = data.map(product => {
 
-    const src = getProductImage(product);
-
-    const reserved =
-      product.status === "reserved";
+    const image =
+      getProductImage(product);
 
 
     return `
 
       <a
-        class="product-card group"
+        class="product-card block"
         href="product.html?id=${product.id}"
       >
 
-        <!-- IMAGE -->
+        <!-- PRODUCT IMAGE -->
 
         <div
-          class="aspect-[4/5] bg-neutral-100 overflow-hidden flex items-center justify-center"
+          class="aspect-[4/5] bg-neutral-100 overflow-hidden"
         >
 
-          <img
-            src="${src}"
-            alt="${escapeHtml(product.name)}"
-            class="product-image w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
-            loading="lazy"
+          ${
+            image
 
-            onerror="
-              this.onerror=null;
-              this.src='assets/logo/thrifheads-logo.png';
-            "
-          >
+              ? `
+
+                <img
+                  class="product-image w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                  src="${image}"
+                  alt="${escapeHtml(product.name)}"
+                  loading="lazy"
+
+                  onerror="
+                    this.style.display='none';
+                    this.parentElement.innerHTML =
+                    '<div class=&quot;w-full h-full grid place-items-center text-neutral-400 text-sm&quot;>Image unavailable</div>';
+                  "
+                >
+
+              `
+
+              : `
+
+                <div
+                  class="w-full h-full grid place-items-center text-neutral-400 text-sm"
+                >
+                  No image
+                </div>
+
+              `
+          }
 
         </div>
 
 
-        <!-- PRODUCT INFO -->
+        <!-- PRODUCT INFORMATION -->
 
         <div class="pt-3">
 
           <p class="font-semibold">
+
             ${escapeHtml(product.name)}
-          </p>
 
-
-          <p class="text-sm text-neutral-500">
-            ${money(product.price)}
           </p>
 
 
           ${
-            reserved
+            product.brand
+
               ? `
-                <p class="text-xs uppercase tracking-wider text-neutral-400 mt-1">
-                  Reserved
+
+                <p class="text-xs text-neutral-500 mt-1">
+
+                  ${escapeHtml(product.brand)}
+
                 </p>
+
               `
+
               : ""
           }
+
+
+          <p class="text-sm text-neutral-500 mt-1">
+
+            ${money(product.price)}
+
+          </p>
 
         </div>
 
@@ -396,9 +515,9 @@ async function loadProducts() {
 
 
 /*
-=========================================================
+========================================================
 START
-=========================================================
+========================================================
 */
 
 loadProducts();
