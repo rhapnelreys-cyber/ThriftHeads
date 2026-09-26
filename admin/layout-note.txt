@@ -1,0 +1,1 @@
+Admin pages use ../js/admin/*.js and ../js/supabase.js. Build them as the secure management surface after running the SQL migration.
