@@ -1,8 +1,245 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Shop — THRIFTHEADS®</title><script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="css/style.css"></head><body>
-<header class="border-b sticky top-0 bg-white/95 backdrop-blur z-50"><nav class="max-w-7xl mx-auto px-5 py-4 flex justify-between"><a class="font-black text-xl" href="index.html">THRIFTHEADS®</a><div class="flex gap-4"><a href="account.html">Account</a><a href="cart.html">Cart</a></div></nav></header>
-<main class="max-w-7xl mx-auto px-5 py-12"><div class="flex gap-4 flex-col md:flex-row md:items-end md:justify-between"><div><p class="text-xs tracking-[.3em] uppercase">Catalog</p><h1 class="text-5xl font-black">SHOP</h1></div><input id="search" class="border border-black/20 px-4 py-3 w-full md:w-80" placeholder="Search pieces..."></div><div id="grid" class="grid grid-cols-2 md:grid-cols-4 gap-5 mt-10"></div></main>
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Shop — THRIFTHEADS®</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<header class="border-b sticky top-0 bg-white/95 backdrop-blur z-50">
+  <nav class="max-w-7xl mx-auto px-5 py-4 flex justify-between">
+    <a class="font-black text-xl" href="index.html">THRIFTHEADS®</a>
+
+    <div class="flex gap-4">
+      <a href="account.html">Account</a>
+      <a href="cart.html">Cart</a>
+    </div>
+  </nav>
+</header>
+
+<main class="max-w-7xl mx-auto px-5 py-12">
+
+  <div class="flex gap-4 flex-col md:flex-row md:items-end md:justify-between">
+
+    <div>
+      <p class="text-xs tracking-[.3em] uppercase">Catalog</p>
+      <h1 class="text-5xl font-black">SHOP</h1>
+    </div>
+
+    <input
+      id="search"
+      class="border border-black/20 px-4 py-3 w-full md:w-80"
+      placeholder="Search pieces..."
+    >
+
+  </div>
+
+  <div
+    id="grid"
+    class="grid grid-cols-2 md:grid-cols-4 gap-5 mt-10"
+  ></div>
+
+</main>
+
 <script type="module">
-import {supabase} from "./js/supabase.js"; import {money,escapeHtml} from "./js/utils.js";
-const grid=document.querySelector("#grid"), search=document.querySelector("#search");
-async function load(){let q=supabase.from("products").select("id,name,price,brand,product_images(storage_path,is_primary,sort_order)").eq("status","active").order("created_at",{ascending:false}); const s=search.value.trim(); if(s) q=q.or(`name.ilike.%${s}%,brand.ilike.%${s}%,description.ilike.%${s}%`); const {data,error}=await q.limit(100); if(error){grid.innerHTML=`<p class="col-span-full text-red-600">${escapeHtml(error.message)}</p>`;return} grid.innerHTML=(data||[]).map(p=>{const img=p.product_images?.sort((a,b)=>Number(b.is_primary)-Number(a.is_primary)||a.sort_order-b.sort_order)[0]?.storage_path;const src=img?supabase.storage.from("product-images").getPublicUrl(img).data.publicUrl:"assets/logo/thrifheads-logo.png";return `<a class="product-card" href="product.html?id=${p.id}"><div class="aspect-[4/5] bg-neutral-100 overflow-hidden"><img class="product-image w-full h-full object-cover" src="${src}"></div><div class="pt-3"><p class="font-semibold">${escapeHtml(p.name)}</p><p>${money(p.price)}</p></div></a>`}).join("")||"<p>No pieces found.</p>"} search.addEventListener("input",()=>{clearTimeout(window.t);window.t=setTimeout(load,250)}); load();
-</script></body></html>
+
+import { supabase } from "./js/supabase.js";
+import { money, escapeHtml } from "./js/utils.js";
+
+const grid = document.querySelector("#grid");
+const search = document.querySelector("#search");
+
+
+function getProductImage(product) {
+
+  const images = Array.isArray(product.product_images)
+    ? [...product.product_images]
+    : [];
+
+  if (!images.length) {
+    return "assets/logo/thrifheads-logo.png";
+  }
+
+  // PRIMARY IMAGE FIRST
+  images.sort((a, b) => {
+
+    const primaryA = a.is_primary === true ? 1 : 0;
+    const primaryB = b.is_primary === true ? 1 : 0;
+
+    if (primaryA !== primaryB) {
+      return primaryB - primaryA;
+    }
+
+    const orderA = Number.isFinite(Number(a.sort_order))
+      ? Number(a.sort_order)
+      : 999999;
+
+    const orderB = Number.isFinite(Number(b.sort_order))
+      ? Number(b.sort_order)
+      : 999999;
+
+    return orderA - orderB;
+
+  });
+
+  const path = images[0]?.storage_path;
+
+  if (!path) {
+    return "assets/logo/thrifheads-logo.png";
+  }
+
+  // If storage_path is already a URL
+  if (
+    path.startsWith("http://") ||
+    path.startsWith("https://")
+  ) {
+    return path;
+  }
+
+  // Supabase Storage public URL
+  const { data } = supabase
+    .storage
+    .from("product-images")
+    .getPublicUrl(path);
+
+  return data?.publicUrl || "assets/logo/thrifheads-logo.png";
+}
+
+
+async function load() {
+
+  let q = supabase
+    .from("products")
+    .select(`
+      id,
+      name,
+      price,
+      brand,
+      description,
+      status,
+      created_at,
+      product_images (
+        storage_path,
+        is_primary,
+        sort_order
+      )
+    `)
+    .in("status", ["active", "reserved"])
+    .order("created_at", { ascending: false });
+
+  const s = search.value.trim();
+
+  if (s) {
+
+    q = q.or(
+      `name.ilike.%${s}%,brand.ilike.%${s}%,description.ilike.%${s}%`
+    );
+
+  }
+
+  const { data, error } = await q.limit(100);
+
+  if (error) {
+
+    console.error(error);
+
+    grid.innerHTML = `
+      <p class="col-span-full text-red-600">
+        ${escapeHtml(error.message)}
+      </p>
+    `;
+
+    return;
+  }
+
+
+  if (!data || data.length === 0) {
+
+    grid.innerHTML = `
+      <p class="col-span-full">
+        No pieces found.
+      </p>
+    `;
+
+    return;
+  }
+
+
+  grid.innerHTML = data.map(product => {
+
+    const image = getProductImage(product);
+
+    const unavailable =
+      product.status === "reserved";
+
+
+    return `
+
+      <a
+        class="product-card group"
+        href="product.html?id=${product.id}"
+      >
+
+        <div
+          class="aspect-[4/5] bg-neutral-100 overflow-hidden flex items-center justify-center"
+        >
+
+          <img
+            src="${image}"
+            alt="${escapeHtml(product.name)}"
+            class="product-image w-full h-full object-contain transition duration-300 group-hover:scale-105"
+            loading="lazy"
+            onerror="this.onerror=null;this.src='assets/logo/thrifheads-logo.png';"
+          >
+
+        </div>
+
+
+        <div class="pt-3">
+
+          <p class="font-semibold">
+            ${escapeHtml(product.name)}
+          </p>
+
+          <p>
+            ${money(product.price)}
+          </p>
+
+          ${
+            unavailable
+              ? `<p class="text-xs uppercase tracking-wider text-neutral-500 mt-1">
+                   Reserved
+                 </p>`
+              : ""
+          }
+
+        </div>
+
+      </a>
+
+    `;
+
+  }).join("");
+
+}
+
+
+search.addEventListener("input", () => {
+
+  clearTimeout(window.t);
+
+  window.t = setTimeout(load, 250);
+
+});
+
+
+load();
+
+</script>
+
+</body>
+</html>
