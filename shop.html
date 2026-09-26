@@ -1,58 +1,116 @@
 <!doctype html>
-<html>
+<html lang="en">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+
   <title>Shop — THRIFTHEADS®</title>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="css/style.css">
 </head>
 
-<body>
+<body class="bg-white text-black">
+
+<!-- ================= HEADER ================= -->
 
 <header class="border-b sticky top-0 bg-white/95 backdrop-blur z-50">
-  <nav class="max-w-7xl mx-auto px-5 py-4 flex justify-between">
-    <a class="font-black text-xl" href="index.html">THRIFTHEADS®</a>
 
-    <div class="flex gap-4">
-      <a href="account.html">Account</a>
-      <a href="cart.html">Cart</a>
+  <nav class="max-w-7xl mx-auto px-5 py-4 flex justify-between items-center">
+
+    <a
+      href="index.html"
+      class="font-black text-xl"
+    >
+      THRIFTHEADS®
+    </a>
+
+    <div class="flex gap-5 text-sm">
+
+      <a href="shop.html">
+        Shop
+      </a>
+
+      <a href="account.html">
+        Account
+      </a>
+
+      <a href="cart.html">
+        Cart
+      </a>
+
     </div>
+
   </nav>
+
 </header>
+
+
+<!-- ================= SHOP ================= -->
 
 <main class="max-w-7xl mx-auto px-5 py-12">
 
-  <div class="flex gap-4 flex-col md:flex-row md:items-end md:justify-between">
+  <div
+    class="flex gap-4 flex-col md:flex-row md:items-end md:justify-between"
+  >
 
     <div>
-      <p class="text-xs tracking-[.3em] uppercase">Catalog</p>
-      <h1 class="text-5xl font-black">SHOP</h1>
+
+      <p class="text-xs tracking-[.3em] uppercase">
+        Catalog
+      </p>
+
+      <h1 class="text-5xl font-black">
+        SHOP
+      </h1>
+
     </div>
+
 
     <input
       id="search"
       class="border border-black/20 px-4 py-3 w-full md:w-80"
       placeholder="Search pieces..."
+      autocomplete="off"
     >
 
   </div>
 
+
+  <!-- PRODUCTS -->
+
   <div
     id="grid"
     class="grid grid-cols-2 md:grid-cols-4 gap-5 mt-10"
-  ></div>
+  >
+
+    <p class="col-span-full text-neutral-500">
+      Loading products...
+    </p>
+
+  </div>
 
 </main>
+
+
+<!-- ================= SUPABASE ================= -->
 
 <script type="module">
 
 import { supabase } from "./js/supabase.js";
 import { money, escapeHtml } from "./js/utils.js";
 
+
 const grid = document.querySelector("#grid");
 const search = document.querySelector("#search");
 
+
+/*
+========================================================
+GET PRODUCT IMAGE FROM SUPABASE STORAGE
+========================================================
+*/
 
 function getProductImage(product) {
 
@@ -60,144 +118,284 @@ function getProductImage(product) {
     ? [...product.product_images]
     : [];
 
+
+  /*
+  No images attached to product
+  */
+
   if (!images.length) {
-    return "assets/logo/thrifheads-logo.png";
+    return null;
   }
 
-  // PRIMARY IMAGE FIRST
+
+  /*
+  Primary image first.
+  Then sort_order.
+  */
+
   images.sort((a, b) => {
 
-    const primaryA = a.is_primary === true ? 1 : 0;
-    const primaryB = b.is_primary === true ? 1 : 0;
+    const primaryDifference =
+      Number(b.is_primary) -
+      Number(a.is_primary);
 
-    if (primaryA !== primaryB) {
-      return primaryB - primaryA;
+    if (primaryDifference !== 0) {
+      return primaryDifference;
     }
 
-    const orderA = Number.isFinite(Number(a.sort_order))
-      ? Number(a.sort_order)
-      : 999999;
-
-    const orderB = Number.isFinite(Number(b.sort_order))
-      ? Number(b.sort_order)
-      : 999999;
-
-    return orderA - orderB;
+    return (
+      Number(a.sort_order || 0) -
+      Number(b.sort_order || 0)
+    );
 
   });
 
-  const path = images[0]?.storage_path;
+
+  let path =
+    images[0]?.storage_path;
+
 
   if (!path) {
-    return "assets/logo/thrifheads-logo.png";
+    return null;
   }
 
-  // If storage_path is already a URL
-  if (
-    path.startsWith("http://") ||
-    path.startsWith("https://")
-  ) {
+
+  path = String(path).trim();
+
+
+  /*
+  If storage_path already contains
+  the full URL, use it.
+  */
+
+  if (/^https?:\/\//i.test(path)) {
     return path;
   }
 
-  // Supabase Storage public URL
-  const { data } = supabase
-    .storage
+
+  /*
+  Remove accidental leading slash.
+  */
+
+  path =
+    path.replace(/^\/+/, "");
+
+
+  /*
+  Remove bucket name if it was
+  accidentally saved in storage_path.
+  */
+
+  path =
+    path.replace(
+      /^product-images\//i,
+      ""
+    );
+
+
+  /*
+  Generate Supabase Storage URL.
+  */
+
+  const {
+    data
+  } = supabase.storage
     .from("product-images")
     .getPublicUrl(path);
 
-  return data?.publicUrl || "assets/logo/thrifheads-logo.png";
+
+  return data?.publicUrl || null;
+
 }
 
 
+/*
+========================================================
+LOAD PRODUCTS
+========================================================
+*/
+
 async function load() {
 
-  let q = supabase
+  grid.innerHTML = `
+    <p class="col-span-full text-neutral-500">
+      Loading products...
+    </p>
+  `;
+
+
+  /*
+  Query products from Supabase.
+
+  product_images is joined automatically
+  through the Supabase relationship.
+  */
+
+  let query = supabase
+
     .from("products")
+
     .select(`
       id,
       name,
       price,
       brand,
       description,
-      status,
       created_at,
+      status,
+
       product_images (
         storage_path,
         is_primary,
         sort_order
       )
     `)
-    .in("status", ["active", "reserved"])
-    .order("created_at", { ascending: false });
 
-  const s = search.value.trim();
+    .eq("status", "active")
 
-  if (s) {
+    .order(
+      "created_at",
+      {
+        ascending: false
+      }
+    );
 
-    q = q.or(
-      `name.ilike.%${s}%,brand.ilike.%${s}%,description.ilike.%${s}%`
+
+  /*
+  SEARCH
+  */
+
+  const keyword =
+    search.value.trim();
+
+
+  if (keyword) {
+
+    query = query.or(
+      `name.ilike.%${keyword}%,` +
+      `brand.ilike.%${keyword}%,` +
+      `description.ilike.%${keyword}%`
     );
 
   }
 
-  const { data, error } = await q.limit(100);
+
+  /*
+  Execute query
+  */
+
+  const {
+    data,
+    error
+  } = await query.limit(100);
+
+
+  /*
+  Database error
+  */
 
   if (error) {
 
-    console.error(error);
+    console.error(
+      "Supabase shop error:",
+      error
+    );
+
 
     grid.innerHTML = `
-      <p class="col-span-full text-red-600">
-        ${escapeHtml(error.message)}
-      </p>
+      <div class="col-span-full border border-red-200 bg-red-50 p-5">
+
+        <p class="font-bold text-red-700">
+          Failed to load products.
+        </p>
+
+        <p class="text-sm text-red-600 mt-2">
+          ${escapeHtml(error.message)}
+        </p>
+
+      </div>
     `;
 
     return;
+
   }
 
+
+  /*
+  No products
+  */
 
   if (!data || data.length === 0) {
 
     grid.innerHTML = `
-      <p class="col-span-full">
+      <p class="col-span-full text-neutral-500">
         No pieces found.
       </p>
     `;
 
     return;
+
   }
 
 
+  /*
+  RENDER PRODUCTS
+  */
+
   grid.innerHTML = data.map(product => {
 
-    const image = getProductImage(product);
-
-    const unavailable =
-      product.status === "reserved";
+    const image =
+      getProductImage(product);
 
 
     return `
 
       <a
-        class="product-card group"
+        class="product-card block"
         href="product.html?id=${product.id}"
       >
 
+        <!-- PRODUCT IMAGE -->
+
         <div
-          class="aspect-[4/5] bg-neutral-100 overflow-hidden flex items-center justify-center"
+          class="aspect-[4/5] bg-neutral-100 overflow-hidden"
         >
 
-          <img
-            src="${image}"
-            alt="${escapeHtml(product.name)}"
-            class="product-image w-full h-full object-contain transition duration-300 group-hover:scale-105"
-            loading="lazy"
-            onerror="this.onerror=null;this.src='assets/logo/thrifheads-logo.png';"
-          >
+          ${
+            image
+
+              ? `
+
+                <img
+                  class="product-image w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                  src="${image}"
+                  alt="${escapeHtml(product.name)}"
+                  loading="lazy"
+
+                  onerror="
+                    this.style.display='none';
+                    this.parentElement.innerHTML =
+                    '<div class=&quot;w-full h-full grid place-items-center text-neutral-400 text-sm&quot;>Image unavailable</div>';
+                  "
+                >
+
+              `
+
+              : `
+
+                <div
+                  class="w-full h-full grid place-items-center text-neutral-400 text-sm"
+                >
+                  No image
+                </div>
+
+              `
+          }
 
         </div>
 
+
+        <!-- PRODUCT INFORMATION -->
 
         <div class="pt-3">
 
@@ -205,17 +403,25 @@ async function load() {
             ${escapeHtml(product.name)}
           </p>
 
-          <p>
-            ${money(product.price)}
-          </p>
 
           ${
-            unavailable
-              ? `<p class="text-xs uppercase tracking-wider text-neutral-500 mt-1">
-                   Reserved
-                 </p>`
+            product.brand
+
+              ? `
+
+                <p class="text-xs text-neutral-500 mt-1">
+                  ${escapeHtml(product.brand)}
+                </p>
+
+              `
+
               : ""
           }
+
+
+          <p class="text-sm mt-1">
+            ${money(product.price)}
+          </p>
 
         </div>
 
@@ -228,14 +434,35 @@ async function load() {
 }
 
 
-search.addEventListener("input", () => {
+/*
+========================================================
+SEARCH
+========================================================
+*/
 
-  clearTimeout(window.t);
+search.addEventListener(
+  "input",
+  () => {
 
-  window.t = setTimeout(load, 250);
+    clearTimeout(
+      window.shopSearchTimer
+    );
 
-});
+    window.shopSearchTimer =
+      setTimeout(
+        load,
+        250
+      );
 
+  }
+);
+
+
+/*
+========================================================
+START
+========================================================
+*/
 
 load();
 
