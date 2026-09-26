@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Account — THRIFTHEADS®</title>
+
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
@@ -22,15 +23,21 @@
     </button>
   </div>
 
+
+  <!-- TITLE -->
   <h1 class="text-5xl font-black mt-16">
     MY ACCOUNT
   </h1>
 
 
-  <!-- ================= PROFILE ================= -->
+  <!-- =====================================================
+       PROFILE
+  ====================================================== -->
+
   <section class="mt-10 border p-6">
 
     <div class="flex justify-between items-center gap-4 flex-wrap">
+
       <div>
         <h2 class="text-2xl font-black">
           PROFILE
@@ -47,6 +54,7 @@
       >
         EDIT PROFILE
       </button>
+
     </div>
 
 
@@ -56,7 +64,8 @@
     ></div>
 
 
-    <!-- EDIT PROFILE -->
+    <!-- EDIT PROFILE FORM -->
+
     <form
       id="profileForm"
       class="hidden mt-6 space-y-4"
@@ -107,6 +116,7 @@
 
       </div>
 
+
       <p id="profileMsg" class="text-sm"></p>
 
     </form>
@@ -115,7 +125,10 @@
 
 
 
-  <!-- ================= ADDRESSES ================= -->
+  <!-- =====================================================
+       ADDRESSES
+  ====================================================== -->
+
   <section class="mt-8 border p-6">
 
     <div class="flex justify-between items-center gap-4 flex-wrap">
@@ -144,13 +157,16 @@
 
 
     <!-- SAVED ADDRESSES -->
+
     <div
       id="addresses"
       class="mt-6 grid md:grid-cols-2 gap-4"
     ></div>
 
 
+
     <!-- ADDRESS FORM -->
+
     <form
       id="addressForm"
       class="hidden mt-6 border-t pt-6 space-y-4"
@@ -165,6 +181,7 @@
 
 
       <!-- LABEL + RECIPIENT -->
+
       <div class="grid md:grid-cols-2 gap-4">
 
         <input
@@ -185,6 +202,7 @@
 
 
       <!-- PHONE -->
+
       <input
         id="addressPhone"
         required
@@ -193,7 +211,8 @@
       >
 
 
-      <!-- HOUSE / STREET -->
+      <!-- ADDRESS LINE 1 -->
+
       <input
         id="houseAddress"
         required
@@ -203,6 +222,7 @@
 
 
       <!-- BARANGAY -->
+
       <input
         id="barangay"
         required
@@ -211,7 +231,8 @@
       >
 
 
-      <!-- CITY / PROVINCE / ZIP -->
+      <!-- CITY / PROVINCE / POSTAL -->
+
       <div class="grid md:grid-cols-3 gap-4">
 
         <input
@@ -239,6 +260,7 @@
 
 
       <!-- DEFAULT -->
+
       <label class="flex items-center gap-2">
 
         <input
@@ -252,6 +274,7 @@
 
 
       <!-- BUTTONS -->
+
       <div class="flex gap-3">
 
         <button
@@ -280,7 +303,10 @@
 
 
 
-  <!-- NAVIGATION -->
+  <!-- =====================================================
+       NAVIGATION
+  ====================================================== -->
+
   <div class="mt-8 flex gap-4 flex-wrap">
 
     <a
@@ -317,7 +343,9 @@ import { logout } from "./js/auth.js";
 import { requireUser } from "./js/utils.js";
 
 
-/* ================= USER ================= */
+/* =====================================================
+   USER
+===================================================== */
 
 const user = await requireUser(supabase);
 
@@ -326,7 +354,10 @@ if (!user) {
 }
 
 
-/* ================= ELEMENTS ================= */
+
+/* =====================================================
+   ELEMENTS
+===================================================== */
 
 const profileEl =
   document.querySelector("#profile");
@@ -350,7 +381,10 @@ const addressMsg =
 let editingAddressId = null;
 
 
-/* ================= ESCAPE HTML ================= */
+
+/* =====================================================
+   ESCAPE HTML
+===================================================== */
 
 function esc(value) {
 
@@ -363,20 +397,26 @@ function esc(value) {
 }
 
 
-/* ================= MESSAGE ================= */
 
-function showMessage(el, text, error = false) {
+/* =====================================================
+   MESSAGE
+===================================================== */
 
-  el.textContent = text;
+function showMessage(element, message, error = false) {
 
-  el.className = error
+  element.textContent = message;
+
+  element.className = error
     ? "text-sm text-red-600"
     : "text-sm text-green-600";
 
 }
 
 
-/* ================= CLEAR ADDRESS ================= */
+
+/* =====================================================
+   CLEAR ADDRESS FORM
+===================================================== */
 
 function clearAddressForm() {
 
@@ -408,56 +448,65 @@ function clearAddressForm() {
 }
 
 
-/* ================= FILL ADDRESS ================= */
 
-function fillAddressForm(a) {
+/* =====================================================
+   FILL ADDRESS FORM
+===================================================== */
 
-  editingAddressId = a.id;
+function fillAddressForm(address) {
+
+  editingAddressId = address.id;
 
   document.querySelector("#addressFormTitle").textContent =
     "EDIT ADDRESS";
 
 
   document.querySelector("#addressLabel").value =
-    a.label || "";
+    address.label || "";
 
 
   /*
     IMPORTANT:
-    Database uses recipient_name
-    NOT full_name
+    Your database uses recipient_name.
   */
 
   document.querySelector("#addressName").value =
-    a.recipient_name || "";
+    address.recipient_name || "";
 
 
   document.querySelector("#addressPhone").value =
-    a.phone || "";
+    address.phone || "";
 
+
+  /*
+    Your database requires line1.
+    We use line1 as the main street/address field.
+  */
 
   document.querySelector("#houseAddress").value =
-    a.house_address || "";
+    address.line1 ||
+    address.house_address ||
+    "";
 
 
   document.querySelector("#barangay").value =
-    a.barangay || "";
+    address.barangay || "";
 
 
   document.querySelector("#city").value =
-    a.city || "";
+    address.city || "";
 
 
   document.querySelector("#province").value =
-    a.province || "";
+    address.province || "";
 
 
   document.querySelector("#postalCode").value =
-    a.postal_code || "";
+    address.postal_code || "";
 
 
   document.querySelector("#defaultAddress").checked =
-    !!a.is_default;
+    !!address.is_default;
 
 
   addressForm.classList.remove("hidden");
@@ -470,7 +519,10 @@ function fillAddressForm(a) {
 }
 
 
-/* ================= LOAD PROFILE ================= */
+
+/* =====================================================
+   LOAD PROFILE
+===================================================== */
 
 async function loadProfile() {
 
@@ -494,6 +546,11 @@ async function loadProfile() {
   }
 
 
+  const fullName =
+    `${data?.first_name || ""} ${data?.last_name || ""}`
+      .trim();
+
+
   profileEl.innerHTML = `
 
     <div>
@@ -503,10 +560,7 @@ async function loadProfile() {
       </p>
 
       <p class="font-bold mt-1">
-        ${esc(
-          `${data?.first_name || ""} ${data?.last_name || ""}`
-          .trim() || "—"
-        )}
+        ${esc(fullName || "—")}
       </p>
 
     </div>
@@ -543,10 +597,8 @@ async function loadProfile() {
   document.querySelector("#firstName").value =
     data?.first_name || "";
 
-
   document.querySelector("#lastName").value =
     data?.last_name || "";
-
 
   document.querySelector("#phone").value =
     data?.phone || "";
@@ -554,7 +606,10 @@ async function loadProfile() {
 }
 
 
-/* ================= LOAD ADDRESSES ================= */
+
+/* =====================================================
+   LOAD ADDRESSES
+===================================================== */
 
 async function loadAddresses() {
 
@@ -574,18 +629,16 @@ async function loadAddresses() {
   if (error) {
 
     addressesEl.innerHTML = `
-
       <p class="text-red-600">
         ${esc(error.message)}
       </p>
-
     `;
 
     return;
   }
 
 
-  if (!data?.length) {
+  if (!data || data.length === 0) {
 
     addressesEl.innerHTML = `
 
@@ -609,7 +662,7 @@ async function loadAddresses() {
   }
 
 
-  addressesEl.innerHTML = data.map(a => `
+  addressesEl.innerHTML = data.map(address => `
 
     <article class="border p-5">
 
@@ -618,11 +671,12 @@ async function loadAddresses() {
         <div>
 
           <h3 class="font-black text-lg">
-            ${esc(a.label)}
+            ${esc(address.label)}
           </h3>
 
+
           ${
-            a.is_default
+            address.is_default
               ? `
                 <span
                   class="inline-block mt-2 text-xs bg-black text-white px-2 py-1"
@@ -639,14 +693,14 @@ async function loadAddresses() {
         <div class="flex gap-3">
 
           <button
-            data-edit="${a.id}"
+            data-edit="${address.id}"
             class="underline"
           >
             Edit
           </button>
 
           <button
-            data-delete="${a.id}"
+            data-delete="${address.id}"
             class="underline"
           >
             Delete
@@ -660,34 +714,40 @@ async function loadAddresses() {
       <div class="mt-4 text-sm leading-6">
 
         <p class="font-bold">
-          ${esc(a.recipient_name)}
+          ${esc(address.recipient_name)}
         </p>
 
         <p>
-          ${esc(a.phone)}
+          ${esc(address.phone)}
         </p>
 
         <p>
-          ${esc(a.house_address)}
+          ${esc(
+            address.line1 ||
+            address.house_address ||
+            ""
+          )}
         </p>
 
         <p>
-          ${esc(a.barangay)}, ${esc(a.city)}
+          ${esc(address.barangay)},
+          ${esc(address.city)}
         </p>
 
         <p>
-          ${esc(a.province)} ${esc(a.postal_code)}
+          ${esc(address.province)}
+          ${esc(address.postal_code)}
         </p>
 
       </div>
 
 
       ${
-        a.is_default
+        address.is_default
           ? ""
           : `
             <button
-              data-default="${a.id}"
+              data-default="${address.id}"
               class="mt-4 border px-4 py-2 text-sm"
             >
               Set as Default
@@ -700,17 +760,21 @@ async function loadAddresses() {
   `).join("");
 
 
-  /* ================= EDIT ================= */
+
+  /* =====================================================
+     EDIT ADDRESS
+  ====================================================== */
 
   addressesEl
     .querySelectorAll("[data-edit]")
-    .forEach(btn => {
+    .forEach(button => {
 
-      btn.onclick = () => {
+      button.onclick = () => {
 
         const address =
-          data.find(a =>
-            a.id === btn.dataset.edit
+          data.find(
+            item =>
+              item.id === button.dataset.edit
           );
 
         if (address) {
@@ -722,13 +786,16 @@ async function loadAddresses() {
     });
 
 
-  /* ================= DELETE ================= */
+
+  /* =====================================================
+     DELETE ADDRESS
+  ====================================================== */
 
   addressesEl
     .querySelectorAll("[data-delete]")
-    .forEach(btn => {
+    .forEach(button => {
 
-      btn.onclick = async () => {
+      button.onclick = async () => {
 
         if (!confirm("Delete this address?")) {
           return;
@@ -739,7 +806,7 @@ async function loadAddresses() {
           await supabase
             .from("addresses")
             .delete()
-            .eq("id", btn.dataset.delete)
+            .eq("id", button.dataset.delete)
             .eq("user_id", user.id);
 
 
@@ -758,20 +825,24 @@ async function loadAddresses() {
     });
 
 
-  /* ================= SET DEFAULT ================= */
+
+  /* =====================================================
+     SET DEFAULT
+  ====================================================== */
 
   addressesEl
     .querySelectorAll("[data-default]")
-    .forEach(btn => {
+    .forEach(button => {
 
-      btn.onclick = async () => {
+      button.onclick = async () => {
 
-        const id = btn.dataset.default;
+        const addressId =
+          button.dataset.default;
 
 
         /*
-          First remove default from
-          all user's addresses.
+          Remove default from
+          all user's addresses first.
         */
 
         const { error: clearError } =
@@ -792,8 +863,8 @@ async function loadAddresses() {
 
 
         /*
-          Then set selected address
-          as default.
+          Set selected address
+          as the only default.
         */
 
         const { error } =
@@ -802,7 +873,7 @@ async function loadAddresses() {
             .update({
               is_default: true
             })
-            .eq("id", id)
+            .eq("id", addressId)
             .eq("user_id", user.id);
 
 
@@ -823,7 +894,10 @@ async function loadAddresses() {
 }
 
 
-/* ================= EDIT PROFILE ================= */
+
+/* =====================================================
+   EDIT PROFILE BUTTON
+===================================================== */
 
 document.querySelector("#editProfileBtn").onclick = () => {
 
@@ -837,7 +911,10 @@ document.querySelector("#editProfileBtn").onclick = () => {
 };
 
 
-/* ================= CANCEL PROFILE ================= */
+
+/* =====================================================
+   CANCEL PROFILE
+===================================================== */
 
 document.querySelector("#cancelProfile").onclick = () => {
 
@@ -848,11 +925,30 @@ document.querySelector("#cancelProfile").onclick = () => {
 };
 
 
-/* ================= SAVE PROFILE ================= */
 
-profileForm.onsubmit = async e => {
+/* =====================================================
+   SAVE PROFILE
+===================================================== */
 
-  e.preventDefault();
+profileForm.onsubmit = async event => {
+
+  event.preventDefault();
+
+
+  const firstName =
+    document.querySelector("#firstName")
+      .value
+      .trim();
+
+  const lastName =
+    document.querySelector("#lastName")
+      .value
+      .trim();
+
+  const phone =
+    document.querySelector("#phone")
+      .value
+      .trim();
 
 
   const { error } =
@@ -860,23 +956,11 @@ profileForm.onsubmit = async e => {
       .from("profiles")
       .update({
 
-        first_name:
-          document
-            .querySelector("#firstName")
-            .value
-            .trim(),
+        first_name: firstName,
 
-        last_name:
-          document
-            .querySelector("#lastName")
-            .value
-            .trim(),
+        last_name: lastName,
 
-        phone:
-          document
-            .querySelector("#phone")
-            .value
-            .trim() || null
+        phone: phone || null
 
       })
       .eq("id", user.id);
@@ -896,7 +980,7 @@ profileForm.onsubmit = async e => {
 
   showMessage(
     profileMsg,
-    "Profile updated."
+    "Profile updated successfully."
   );
 
 
@@ -907,7 +991,10 @@ profileForm.onsubmit = async e => {
 };
 
 
-/* ================= ADD ADDRESS ================= */
+
+/* =====================================================
+   ADD ADDRESS BUTTON
+===================================================== */
 
 document.querySelector("#addAddressBtn").onclick = () => {
 
@@ -923,7 +1010,10 @@ document.querySelector("#addAddressBtn").onclick = () => {
 };
 
 
-/* ================= CANCEL ADDRESS ================= */
+
+/* =====================================================
+   CANCEL ADDRESS
+===================================================== */
 
 document.querySelector("#cancelAddress").onclick = () => {
 
@@ -934,28 +1024,100 @@ document.querySelector("#cancelAddress").onclick = () => {
 };
 
 
-/* ================= SAVE ADDRESS ================= */
 
-addressForm.onsubmit = async e => {
+/* =====================================================
+   SAVE ADDRESS
+===================================================== */
 
-  e.preventDefault();
+addressForm.onsubmit = async event => {
 
+  event.preventDefault();
+
+
+  const label =
+    document.querySelector("#addressLabel")
+      .value
+      .trim();
+
+  const recipientName =
+    document.querySelector("#addressName")
+      .value
+      .trim();
+
+  const phone =
+    document.querySelector("#addressPhone")
+      .value
+      .trim();
+
+  const line1 =
+    document.querySelector("#houseAddress")
+      .value
+      .trim();
+
+  const barangay =
+    document.querySelector("#barangay")
+      .value
+      .trim();
+
+  const city =
+    document.querySelector("#city")
+      .value
+      .trim();
+
+  const province =
+    document.querySelector("#province")
+      .value
+      .trim();
+
+  const postalCode =
+    document.querySelector("#postalCode")
+      .value
+      .trim();
 
   const makeDefault =
-    document
-      .querySelector("#defaultAddress")
+    document.querySelector("#defaultAddress")
       .checked;
 
 
+
+  /* =====================================================
+     VALIDATION
+  ====================================================== */
+
+  if (
+    !label ||
+    !recipientName ||
+    !phone ||
+    !line1 ||
+    !barangay ||
+    !city ||
+    !province ||
+    !postalCode
+  ) {
+
+    showMessage(
+      addressMsg,
+      "Please complete all address fields.",
+      true
+    );
+
+    return;
+  }
+
+
+
+  /* =====================================================
+     DEFAULT ADDRESS
+  ====================================================== */
+
   /*
-    If this address should be the default,
-    first remove default from the
-    user's other addresses.
+    If this address becomes default,
+    remove default from all others.
   */
 
   if (makeDefault) {
 
-    const { error: clearError } =
+    const { error } =
       await supabase
         .from("addresses")
         .update({
@@ -964,11 +1126,11 @@ addressForm.onsubmit = async e => {
         .eq("user_id", user.id);
 
 
-    if (clearError) {
+    if (error) {
 
       showMessage(
         addressMsg,
-        clearError.message,
+        error.message,
         true
       );
 
@@ -978,72 +1140,55 @@ addressForm.onsubmit = async e => {
   }
 
 
-  /* ================= PAYLOAD ================= */
+
+  /* =====================================================
+     DATABASE PAYLOAD
+  ====================================================== */
 
   const payload = {
 
     user_id: user.id,
 
-    label:
-      document
-        .querySelector("#addressLabel")
-        .value
-        .trim(),
+    label: label,
+
+    /*
+      Your database requires this column.
+    */
+
+    recipient_name: recipientName,
+
+    phone: phone,
 
     /*
       IMPORTANT:
-      This matches the database column.
+      Your database requires line1.
     */
 
-    recipient_name:
-      document
-        .querySelector("#addressName")
-        .value
-        .trim(),
+    line1: line1,
 
-    phone:
-      document
-        .querySelector("#addressPhone")
-        .value
-        .trim(),
+    /*
+      Keep house_address too.
+    */
 
-    house_address:
-      document
-        .querySelector("#houseAddress")
-        .value
-        .trim(),
+    house_address: line1,
 
-    barangay:
-      document
-        .querySelector("#barangay")
-        .value
-        .trim(),
+    barangay: barangay,
 
-    city:
-      document
-        .querySelector("#city")
-        .value
-        .trim(),
+    city: city,
 
-    province:
-      document
-        .querySelector("#province")
-        .value
-        .trim(),
+    province: province,
 
-    postal_code:
-      document
-        .querySelector("#postalCode")
-        .value
-        .trim(),
+    postal_code: postalCode,
 
-    is_default:
-      makeDefault
+    is_default: makeDefault
 
   };
 
 
-  /* ================= UPDATE ================= */
+
+  /* =====================================================
+     UPDATE EXISTING ADDRESS
+  ====================================================== */
 
   if (editingAddressId) {
 
@@ -1066,10 +1211,13 @@ addressForm.onsubmit = async e => {
       return;
     }
 
-
   }
 
-  /* ================= INSERT ================= */
+
+
+  /* =====================================================
+     CREATE NEW ADDRESS
+  ====================================================== */
 
   else {
 
@@ -1093,6 +1241,11 @@ addressForm.onsubmit = async e => {
   }
 
 
+
+  /* =====================================================
+     SUCCESS
+  ====================================================== */
+
   showMessage(
     addressMsg,
     "Address saved successfully."
@@ -1108,17 +1261,23 @@ addressForm.onsubmit = async e => {
 
     clearAddressForm();
 
-  }, 500);
+  }, 700);
 
 };
 
 
-/* ================= LOGOUT ================= */
+
+/* =====================================================
+   LOGOUT
+===================================================== */
 
 document.querySelector("#logout").onclick = logout;
 
 
-/* ================= INITIAL LOAD ================= */
+
+/* =====================================================
+   INITIAL LOAD
+===================================================== */
 
 await loadProfile();
 
