@@ -1,3 +1,435 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Product Editor — THRIFTHEADS®</title><script src="https://cdn.tailwindcss.com"></script></head><body><main class="max-w-3xl mx-auto p-6"><a href="products.html" class="font-black">← Products</a><h1 id="title" class="text-5xl font-black mt-12">ADD PRODUCT</h1><form id="f" class="mt-8 space-y-3"><input id="name" required placeholder="Name" class="border p-3 w-full"><input id="sku" required placeholder="SKU" class="border p-3 w-full"><input id="slug" required placeholder="Slug" class="border p-3 w-full"><input id="brand" placeholder="Brand" class="border p-3 w-full"><input id="size" placeholder="Size" class="border p-3 w-full"><input id="price" required type="number" step=".01" placeholder="Price" class="border p-3 w-full"><input id="stock" required type="number" min="0" placeholder="Stock" class="border p-3 w-full"><select id="condition" class="border p-3 w-full"><option value="excellent">Excellent</option><option value="very_good">Very Good</option><option value="good">Good</option><option value="fair">Fair</option><option value="new_with_tags">New With Tags</option></select><select id="status" class="border p-3 w-full"><option value="draft">Draft</option><option value="active">Active</option><option value="archived">Archived</option></select><textarea id="description" placeholder="Description" class="border p-3 w-full h-40"></textarea><label class="flex gap-2"><input id="featured" type="checkbox"> Featured</label><button class="bg-black text-white px-8 py-4">SAVE PRODUCT</button><p id="msg"></p></form></main><script type="module">
-import {supabase} from "../js/supabase.js";import {requireRole} from "../js/auth.js";const a=await requireRole(["admin","staff"]);const id=new URLSearchParams(location.search).get("id");if(a){if(id){const {data:p}=await supabase.from("products").select("*").eq("id",id).single();if(p){for(const k of ["name","sku","slug","brand","size","price","stock","condition","status","description"])document.querySelector("#"+k).value=p[k]??"";featured.checked=p.is_featured;title.textContent="EDIT PRODUCT"}}document.querySelector("#f").onsubmit=async e=>{e.preventDefault();const payload={name:name.value,sku:sku.value,slug:slug.value,brand:brand.value||null,size:size.value||null,price:Number(price.value),stock:Number(stock.value),condition:condition.value,status:status.value,description:description.value||null,is_featured:featured.checked};const r=id?await supabase.from("products").update(payload).eq("id",id):await supabase.from("products").insert(payload);msg.textContent=r.error?r.error.message:"Saved.";if(!r.error&&!id)setTimeout(()=>location.href="products.html",500)}}}
-</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Product Editor — THRIFTHEADS®</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-white text-black">
+  <main class="max-w-3xl mx-auto p-6">
+    <a href="products.html" class="font-black">← Products</a>
+
+    <h1 id="title" class="text-5xl font-black mt-12">ADD PRODUCT</h1>
+
+    <form id="f" class="mt-8 space-y-4">
+      <input id="name" required placeholder="Name" class="border p-3 w-full">
+      <input id="sku" required placeholder="SKU" class="border p-3 w-full">
+      <input id="slug" required placeholder="Slug" class="border p-3 w-full">
+      <input id="brand" placeholder="Brand" class="border p-3 w-full">
+      <input id="size" placeholder="Size" class="border p-3 w-full">
+      <input id="price" required type="number" step=".01" min="0" placeholder="Price" class="border p-3 w-full">
+      <input id="stock" required type="number" min="0" placeholder="Stock" class="border p-3 w-full">
+
+      <select id="condition" class="border p-3 w-full">
+        <option value="excellent">Excellent</option>
+        <option value="very_good">Very Good</option>
+        <option value="good">Good</option>
+        <option value="fair">Fair</option>
+        <option value="new_with_tags">New With Tags</option>
+      </select>
+
+      <select id="status" class="border p-3 w-full">
+        <option value="draft">Draft</option>
+        <option value="active">Active</option>
+        <option value="archived">Archived</option>
+      </select>
+
+      <!-- PRODUCT IMAGE -->
+      <div class="border-2 border-dashed border-gray-300 p-5">
+        <label for="image" class="block font-black text-lg mb-3">PRODUCT IMAGE</label>
+
+        <div id="previewWrap" class="hidden mb-4">
+          <img id="preview" src="" alt="Product preview"
+               class="w-full max-h-96 object-contain border bg-gray-50">
+        </div>
+
+        <input
+          id="image"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          class="block w-full border p-3"
+        >
+
+        <p class="text-sm text-gray-500 mt-2">
+          JPG, PNG or WEBP • Maximum 5 MB
+        </p>
+
+        <p id="imageMsg" class="text-sm mt-2"></p>
+      </div>
+
+      <textarea id="description" placeholder="Description"
+                class="border p-3 w-full h-40"></textarea>
+
+      <label class="flex gap-2 items-center">
+        <input id="featured" type="checkbox">
+        Featured
+      </label>
+
+      <button id="saveBtn" type="submit"
+              class="bg-black text-white px-8 py-4 font-bold disabled:opacity-50">
+        SAVE PRODUCT
+      </button>
+
+      <p id="msg" class="font-medium"></p>
+    </form>
+  </main>
+
+<script type="module">
+import { supabase } from "../js/supabase.js";
+import { requireRole } from "../js/auth.js";
+
+const BUCKET = "product-images";
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
+const form = document.querySelector("#f");
+const title = document.querySelector("#title");
+const msg = document.querySelector("#msg");
+const imageMsg = document.querySelector("#imageMsg");
+const imageInput = document.querySelector("#image");
+const previewWrap = document.querySelector("#previewWrap");
+const preview = document.querySelector("#preview");
+const saveBtn = document.querySelector("#saveBtn");
+
+const fields = {
+  name: document.querySelector("#name"),
+  sku: document.querySelector("#sku"),
+  slug: document.querySelector("#slug"),
+  brand: document.querySelector("#brand"),
+  size: document.querySelector("#size"),
+  price: document.querySelector("#price"),
+  stock: document.querySelector("#stock"),
+  condition: document.querySelector("#condition"),
+  status: document.querySelector("#status"),
+  description: document.querySelector("#description"),
+  featured: document.querySelector("#featured")
+};
+
+const id = new URLSearchParams(location.search).get("id");
+
+let existingImageUrl = null;
+let selectedFile = null;
+let currentPreviewUrl = null;
+
+function setMessage(element, text, type = "normal") {
+  element.textContent = text;
+  element.className =
+    type === "error"
+      ? "text-sm text-red-600 mt-2"
+      : type === "success"
+        ? "text-sm text-green-600 mt-2"
+        : "text-sm text-gray-600 mt-2";
+}
+
+function showPreview(src) {
+  preview.src = src;
+  previewWrap.classList.remove("hidden");
+}
+
+function hidePreview() {
+  preview.removeAttribute("src");
+  previewWrap.classList.add("hidden");
+}
+
+function getExtension(file) {
+  const map = {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/webp": "webp"
+  };
+  return map[file.type] || null;
+}
+
+function getStoragePath(publicUrl) {
+  if (!publicUrl) return null;
+
+  const marker = `/object/public/${BUCKET}/`;
+  const index = publicUrl.indexOf(marker);
+
+  if (index === -1) return null;
+
+  return decodeURIComponent(publicUrl.slice(index + marker.length));
+}
+
+imageInput.addEventListener("change", () => {
+  setMessage(imageMsg, "");
+
+  const file = imageInput.files?.[0];
+
+  if (!file) {
+    selectedFile = null;
+    if (existingImageUrl) {
+      showPreview(existingImageUrl);
+    } else {
+      hidePreview();
+    }
+    return;
+  }
+
+  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+    selectedFile = null;
+    imageInput.value = "";
+    setMessage(imageMsg, "Only JPG, PNG and WEBP images are allowed.", "error");
+    return;
+  }
+
+  if (file.size > MAX_FILE_SIZE) {
+    selectedFile = null;
+    imageInput.value = "";
+    setMessage(imageMsg, "Image must be 5 MB or smaller.", "error");
+    return;
+  }
+
+  selectedFile = file;
+
+  if (currentPreviewUrl) {
+    URL.revokeObjectURL(currentPreviewUrl);
+  }
+
+  currentPreviewUrl = URL.createObjectURL(file);
+  showPreview(currentPreviewUrl);
+  setMessage(imageMsg, "Image ready to upload.", "success");
+});
+
+async function loadProduct() {
+  if (!id) return;
+
+  const { data: product, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    setMessage(msg, error.message, "error");
+    return;
+  }
+
+  if (!product) return;
+
+  for (const key of [
+    "name",
+    "sku",
+    "slug",
+    "brand",
+    "size",
+    "price",
+    "stock",
+    "condition",
+    "status",
+    "description"
+  ]) {
+    fields[key].value = product[key] ?? "";
+  }
+
+  fields.featured.checked = Boolean(product.is_featured);
+
+  existingImageUrl = product.image_url || null;
+
+  if (existingImageUrl) {
+    showPreview(existingImageUrl);
+  }
+
+  title.textContent = "EDIT PRODUCT";
+}
+
+async function uploadImage(productId, file) {
+  const extension = getExtension(file);
+
+  if (!extension) {
+    throw new Error("Unsupported image type.");
+  }
+
+  const filename = `${productId}-${crypto.randomUUID()}.${extension}`;
+  const path = filename;
+
+  const { error: uploadError } = await supabase.storage
+    .from(BUCKET)
+    .upload(path, file, {
+      cacheControl: "3600",
+      contentType: file.type,
+      upsert: false
+    });
+
+  if (uploadError) {
+    throw new Error(`Image upload failed: ${uploadError.message}`);
+  }
+
+  const { data } = supabase.storage
+    .from(BUCKET)
+    .getPublicUrl(path);
+
+  if (!data?.publicUrl) {
+    throw new Error("Image uploaded, but no public URL was returned.");
+  }
+
+  return {
+    path,
+    publicUrl: data.publicUrl
+  };
+}
+
+async function deleteOldImage(publicUrl) {
+  const path = getStoragePath(publicUrl);
+
+  if (!path) return;
+
+  const { error } = await supabase.storage
+    .from(BUCKET)
+    .remove([path]);
+
+  if (error) {
+    // Do not fail the product save just because old-image cleanup failed.
+    console.warn("Old image cleanup failed:", error.message);
+  }
+}
+
+async function createProduct(payload) {
+  const { data, error } = await supabase
+    .from("products")
+    .insert(payload)
+    .select("id, image_url")
+    .single();
+
+  if (error) throw error;
+
+  return data;
+}
+
+async function updateProduct(productId, payload) {
+  const { data, error } = await supabase
+    .from("products")
+    .update(payload)
+    .eq("id", productId)
+    .select("id, image_url")
+    .single();
+
+  if (error) throw error;
+
+  return data;
+}
+
+const authUser = await requireRole(["admin", "staff"]);
+
+if (authUser) {
+  await loadProduct();
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    if (saveBtn.disabled) return;
+
+    saveBtn.disabled = true;
+    saveBtn.textContent = "SAVING...";
+    setMessage(msg, "");
+    setMessage(imageMsg, "");
+
+    try {
+      const payload = {
+        name: fields.name.value.trim(),
+        sku: fields.sku.value.trim(),
+        slug: fields.slug.value.trim(),
+        brand: fields.brand.value.trim() || null,
+        size: fields.size.value.trim() || null,
+        price: Number(fields.price.value),
+        stock: Number(fields.stock.value),
+        condition: fields.condition.value,
+        status: fields.status.value,
+        description: fields.description.value.trim() || null,
+        is_featured: fields.featured.checked
+      };
+
+      if (!payload.name || !payload.sku || !payload.slug) {
+        throw new Error("Name, SKU and Slug are required.");
+      }
+
+      if (!Number.isFinite(payload.price) || payload.price < 0) {
+        throw new Error("Enter a valid price.");
+      }
+
+      if (!Number.isInteger(payload.stock) || payload.stock < 0) {
+        throw new Error("Enter a valid stock quantity.");
+      }
+
+      // CREATE
+      if (!id) {
+        const product = await createProduct(payload);
+
+        if (selectedFile) {
+          setMessage(imageMsg, "Uploading image...");
+
+          const uploaded = await uploadImage(product.id, selectedFile);
+
+          const { error: imageUpdateError } = await supabase
+            .from("products")
+            .update({ image_url: uploaded.publicUrl })
+            .eq("id", product.id);
+
+          if (imageUpdateError) {
+            // Best-effort cleanup if the image URL couldn't be saved.
+            await supabase.storage.from(BUCKET).remove([uploaded.path]);
+            throw imageUpdateError;
+          }
+        }
+
+        setMessage(msg, "Product saved successfully.", "success");
+
+        setTimeout(() => {
+          location.href = "products.html";
+        }, 700);
+
+        return;
+      }
+
+      // EDIT
+      let uploaded = null;
+
+      if (selectedFile) {
+        setMessage(imageMsg, "Uploading new image...");
+
+        uploaded = await uploadImage(id, selectedFile);
+        payload.image_url = uploaded.publicUrl;
+      }
+
+      const updated = await updateProduct(id, payload);
+
+      // Only remove the old image after the database update succeeds.
+      if (uploaded && existingImageUrl) {
+        await deleteOldImage(existingImageUrl);
+        existingImageUrl = uploaded.publicUrl;
+      }
+
+      setMessage(msg, "Product updated successfully.", "success");
+
+      if (uploaded) {
+        setMessage(imageMsg, "Image uploaded successfully.", "success");
+      }
+
+      setTimeout(() => {
+        location.href = "products.html";
+      }, 700);
+
+    } catch (error) {
+      console.error(error);
+
+      setMessage(
+        msg,
+        error?.message || "Something went wrong while saving the product.",
+        "error"
+      );
+
+      // If a new image was uploaded during an edit but the DB update failed,
+      // try to remove the orphaned image.
+      if (typeof uploaded !== "undefined" && uploaded?.path) {
+        await supabase.storage.from(BUCKET).remove([uploaded.path]);
+      }
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = "SAVE PRODUCT";
+    }
+  });
+}
+</script>
+</body>
+</html>
