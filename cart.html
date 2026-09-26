@@ -1,3 +1,819 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cart — THRIFTHEADS®</title><script src="https://cdn.tailwindcss.com"></script></head><body><main class="max-w-5xl mx-auto p-6"><a href="shop.html" class="font-black text-xl">← THRIFTHEADS®</a><h1 class="text-5xl font-black mt-12">YOUR CART</h1><div id="cart" class="mt-10"></div></main><script type="module">
-import {supabase} from "./js/supabase.js";import {getUser} from "./js/auth.js";import {getCart,removeCartItem} from "./js/cart.js";import {money,escapeHtml} from "./js/utils.js";const u=await getUser();const root=document.querySelector("#cart");if(!u){location.href="auth.html?redirect=cart.html"}else{const {data,error}=await getCart(u.id);if(error){root.textContent=error.message}else{const total=(data||[]).reduce((s,x)=>s+Number(x.products.price)*x.quantity,0);root.innerHTML=(data||[]).map(x=>`<div class="border-b py-5 flex justify-between gap-4"><div><b>${escapeHtml(x.products.name)}</b><p>${money(x.products.price)} × ${x.quantity}</p></div><button data-id="${x.id}" class="underline">Remove</button></div>`).join("")+`<div class="text-right mt-8"><p class="text-2xl font-black">${money(total)}</p><a href="checkout.html" class="inline-block mt-5 bg-black text-white px-7 py-4">CHECKOUT</a></div>`;root.querySelectorAll("button").forEach(b=>b.onclick=async()=>{await removeCartItem(b.dataset.id);location.reload()})}}
-</script></body></html>
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <title>Cart — THRIFTHEADS®</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link
+    rel="stylesheet"
+    href="css/style.css"
+  >
+</head>
+
+
+<body class="bg-white text-black">
+
+
+<main class="max-w-5xl mx-auto p-6">
+
+
+  <!-- HEADER -->
+
+  <div class="flex justify-between items-center">
+
+    <a
+      href="shop.html"
+      class="font-black text-xl"
+    >
+      ← THRIFTHEADS®
+    </a>
+
+    <a
+      href="account.html"
+      class="text-sm underline"
+    >
+      Account
+    </a>
+
+  </div>
+
+
+  <h1 class="text-5xl font-black mt-12">
+    YOUR CART
+  </h1>
+
+
+  <div
+    id="cart"
+    class="mt-10"
+  >
+    <p class="text-neutral-500">
+      Loading cart...
+    </p>
+  </div>
+
+
+</main>
+
+
+<script type="module">
+
+import { supabase } from "./js/supabase.js";
+
+import { getUser } from "./js/auth.js";
+
+import {
+  getCart,
+  removeCartItem
+} from "./js/cart.js";
+
+import {
+  money,
+  escapeHtml
+} from "./js/utils.js";
+
+
+const root =
+  document.querySelector("#cart");
+
+
+/* =====================================================
+SUPABASE PRODUCT IMAGE
+===================================================== */
+
+function getProductImage(product) {
+
+  const images =
+    Array.isArray(product?.product_images)
+      ? [...product.product_images]
+      : [];
+
+
+  if (!images.length) {
+    return null;
+  }
+
+
+  images.sort((a, b) => {
+
+    const primary =
+      Number(b.is_primary) -
+      Number(a.is_primary);
+
+    if (primary !== 0) {
+      return primary;
+    }
+
+    return (
+      Number(a.sort_order || 0) -
+      Number(b.sort_order || 0)
+    );
+
+  });
+
+
+  let path =
+    images[0]?.storage_path;
+
+
+  if (!path) {
+    return null;
+  }
+
+
+  path =
+    String(path).trim();
+
+
+  /*
+  If storage_path is already
+  a full URL.
+  */
+
+  if (/^https?:\/\//i.test(path)) {
+    return path;
+  }
+
+
+  /*
+  Remove accidental leading slash.
+  */
+
+  path =
+    path.replace(/^\/+/, "");
+
+
+  /*
+  If the database contains:
+
+  product-images/folder/image.jpg
+
+  remove the bucket name because
+  getPublicUrl already knows the bucket.
+  */
+
+  path =
+    path.replace(
+      /^product-images\//i,
+      ""
+    );
+
+
+  const {
+    data
+  } =
+    supabase
+      .storage
+      .from("product-images")
+      .getPublicUrl(path);
+
+
+  return data?.publicUrl || null;
+
+}
+
+
+/* =====================================================
+ESCAPE
+===================================================== */
+
+function esc(value) {
+
+  return escapeHtml(
+    value ?? ""
+  );
+
+}
+
+
+/* =====================================================
+LOAD CART
+===================================================== */
+
+async function loadCart() {
+
+  const user =
+    await getUser();
+
+
+  if (!user) {
+
+    location.href =
+      "auth.html?redirect=cart.html";
+
+    return;
+
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await getCart(user.id);
+
+
+  if (error) {
+
+    console.error(
+      "Cart error:",
+      error
+    );
+
+    root.innerHTML = `
+      <div class="border p-6">
+
+        <p class="font-bold text-red-600">
+          ${esc(error.message)}
+        </p>
+
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  const items =
+    data || [];
+
+
+  /* ===================================================
+  EMPTY CART
+  =================================================== */
+
+  if (!items.length) {
+
+    root.innerHTML = `
+
+      <div
+        class="border border-dashed p-12 text-center"
+      >
+
+        <h2 class="text-2xl font-black">
+          YOUR CART IS EMPTY
+        </h2>
+
+        <p class="text-neutral-500 mt-2">
+          Looks like you haven't added anything yet.
+        </p>
+
+        <a
+          href="shop.html"
+          class="inline-block bg-black text-white px-7 py-4 mt-6 font-bold"
+        >
+          SHOP NOW
+        </a>
+
+      </div>
+
+    `;
+
+    return;
+
+  }
+
+
+  /* ===================================================
+  TOTAL
+  =================================================== */
+
+  const total =
+    items.reduce(
+      (sum, item) =>
+        sum +
+        Number(item.products?.price || 0) *
+        Number(item.quantity || 0),
+      0
+    );
+
+
+  const totalItems =
+    items.reduce(
+      (sum, item) =>
+        sum + Number(item.quantity || 0),
+      0
+    );
+
+
+  /* ===================================================
+  CART HTML
+  =================================================== */
+
+  root.innerHTML = `
+
+    <div class="space-y-5">
+
+      ${items.map(item => {
+
+        const product =
+          item.products;
+
+
+        if (!product) {
+          return "";
+        }
+
+
+        const price =
+          Number(product.price || 0);
+
+
+        const quantity =
+          Number(item.quantity || 1);
+
+
+        /*
+        Product stock.
+
+        If your getCart() query already returns
+        stock, we'll use it.
+        */
+
+        const stock =
+          Number(
+            product.stock ??
+            999
+          );
+
+
+        const image =
+          getProductImage(product);
+
+
+        return `
+
+          <article
+            class="border p-4 md:p-5"
+          >
+
+            <div
+              class="flex flex-col sm:flex-row gap-5"
+            >
+
+
+              <!-- PRODUCT IMAGE -->
+
+              <a
+                href="product.html?id=${encodeURIComponent(product.id)}"
+                class="w-full sm:w-32 h-40 bg-neutral-100 flex-shrink-0 overflow-hidden"
+              >
+
+                ${
+                  image
+
+                    ? `
+
+                      <img
+                        src="${image}"
+                        alt="${esc(product.name)}"
+                        class="w-full h-full object-cover"
+                      >
+
+                    `
+
+                    : `
+
+                      <div
+                        class="w-full h-full grid place-items-center text-xs text-neutral-400"
+                      >
+                        No image
+                      </div>
+
+                    `
+                }
+
+              </a>
+
+
+              <!-- PRODUCT INFO -->
+
+              <div
+                class="flex-1"
+              >
+
+                <div
+                  class="flex justify-between gap-4"
+                >
+
+                  <div>
+
+                    <a
+                      href="product.html?id=${encodeURIComponent(product.id)}"
+                      class="font-black text-lg hover:underline"
+                    >
+                      ${esc(product.name)}
+                    </a>
+
+
+                    ${
+                      product.brand
+
+                        ? `
+
+                          <p class="text-sm text-neutral-500 mt-1">
+                            ${esc(product.brand)}
+                          </p>
+
+                        `
+
+                        : ""
+                    }
+
+                  </div>
+
+
+                  <p class="font-bold">
+                    ${money(price)}
+                  </p>
+
+                </div>
+
+
+                <!-- QUANTITY -->
+
+                <div
+                  class="mt-6 flex items-center justify-between gap-4 flex-wrap"
+                >
+
+                  <div>
+
+                    <p
+                      class="text-xs uppercase tracking-widest text-neutral-500 mb-2"
+                    >
+                      Quantity
+                    </p>
+
+
+                    <div
+                      class="inline-flex border border-black items-center"
+                    >
+
+                      <button
+                        type="button"
+                        data-action="decrease"
+                        data-id="${item.id}"
+                        data-quantity="${quantity}"
+                        class="w-11 h-11 text-xl font-bold hover:bg-black hover:text-white"
+                        aria-label="Decrease quantity"
+                        ${quantity <= 1 ? "disabled" : ""}
+                      >
+                        −
+                      </button>
+
+
+                      <span
+                        class="w-12 text-center font-bold"
+                      >
+                        ${quantity}
+                      </span>
+
+
+                      <button
+                        type="button"
+                        data-action="increase"
+                        data-id="${item.id}"
+                        data-quantity="${quantity}"
+                        data-stock="${stock}"
+                        class="w-11 h-11 text-xl font-bold hover:bg-black hover:text-white disabled:opacity-30"
+                        aria-label="Increase quantity"
+                        ${quantity >= stock ? "disabled" : ""}
+                      >
+                        +
+                      </button>
+
+                    </div>
+
+                  </div>
+
+
+                  <!-- ITEM TOTAL -->
+
+                  <div class="text-right">
+
+                    <p
+                      class="text-xs uppercase tracking-widest text-neutral-500"
+                    >
+                      Item Total
+                    </p>
+
+                    <p
+                      class="text-xl font-black mt-1"
+                    >
+                      ${money(price * quantity)}
+                    </p>
+
+                  </div>
+
+                </div>
+
+
+                <!-- REMOVE -->
+
+                <button
+                  type="button"
+                  data-action="remove"
+                  data-id="${item.id}"
+                  class="mt-5 text-sm underline text-neutral-600 hover:text-black"
+                >
+                  Remove
+                </button>
+
+
+                ${
+                  quantity >= stock
+
+                    ? `
+
+                      <p class="text-xs text-neutral-500 mt-2">
+                        Maximum available stock reached.
+                      </p>
+
+                    `
+
+                    : ""
+                }
+
+              </div>
+
+            </div>
+
+          </article>
+
+        `;
+
+      }).join("")}
+
+    </div>
+
+
+    <!-- =================================================
+    SUMMARY
+    ================================================= -->
+
+    <div
+      class="border-t mt-10 pt-8"
+    >
+
+      <div
+        class="max-w-md ml-auto"
+      >
+
+        <div
+          class="flex justify-between items-center"
+        >
+
+          <span class="text-neutral-600">
+            Items
+          </span>
+
+          <span>
+            ${totalItems}
+          </span>
+
+        </div>
+
+
+        <div
+          class="flex justify-between items-center mt-3"
+        >
+
+          <span class="text-neutral-600">
+            Subtotal
+          </span>
+
+          <span class="text-2xl font-black">
+            ${money(total)}
+          </span>
+
+        </div>
+
+
+        <p
+          class="text-sm text-neutral-500 mt-2"
+        >
+          Shipping is calculated during checkout.
+        </p>
+
+
+        <a
+          href="checkout.html"
+          class="block text-center bg-black text-white px-7 py-4 mt-6 font-bold"
+        >
+          PROCEED TO CHECKOUT
+        </a>
+
+
+        <a
+          href="shop.html"
+          class="block text-center border border-black px-7 py-4 mt-3 font-bold"
+        >
+          CONTINUE SHOPPING
+        </a>
+
+      </div>
+
+    </div>
+
+  `;
+
+
+  /* ===================================================
+  BUTTON EVENTS
+  =================================================== */
+
+  root
+    .querySelectorAll(
+      "[data-action='decrease']"
+    )
+    .forEach(button => {
+
+      button.onclick =
+        async () => {
+
+          const id =
+            button.dataset.id;
+
+
+          const current =
+            Number(
+              button.dataset.quantity
+            );
+
+
+          if (current <= 1) {
+            return;
+          }
+
+
+          await updateQuantity(
+            id,
+            current - 1
+          );
+
+        };
+
+    });
+
+
+  root
+    .querySelectorAll(
+      "[data-action='increase']"
+    )
+    .forEach(button => {
+
+      button.onclick =
+        async () => {
+
+          const id =
+            button.dataset.id;
+
+
+          const current =
+            Number(
+              button.dataset.quantity
+            );
+
+
+          const stock =
+            Number(
+              button.dataset.stock
+            );
+
+
+          if (
+            stock > 0 &&
+            current >= stock
+          ) {
+
+            return;
+
+          }
+
+
+          await updateQuantity(
+            id,
+            current + 1
+          );
+
+        };
+
+    });
+
+
+  root
+    .querySelectorAll(
+      "[data-action='remove']"
+    )
+    .forEach(button => {
+
+      button.onclick =
+        async () => {
+
+          const id =
+            button.dataset.id;
+
+
+          const confirmed =
+            confirm(
+              "Remove this product from your cart?"
+            );
+
+
+          if (!confirmed) {
+            return;
+          }
+
+
+          try {
+
+            await removeCartItem(
+              id
+            );
+
+            await loadCart();
+
+          } catch (error) {
+
+            alert(
+              error.message ||
+              "Unable to remove product."
+            );
+
+          }
+
+        };
+
+    });
+
+}
+
+
+/* =====================================================
+UPDATE QUANTITY
+===================================================== */
+
+async function updateQuantity(
+  cartItemId,
+  quantity
+) {
+
+  if (quantity < 1) {
+    return;
+  }
+
+
+  /*
+  Update directly in Supabase.
+  */
+
+  const {
+    error
+  } =
+    await supabase
+      .from("cart_items")
+      .update({
+        quantity
+      })
+      .eq("id", cartItemId);
+
+
+  if (error) {
+
+    console.error(
+      "Quantity update error:",
+      error
+    );
+
+
+    alert(
+      error.message ||
+      "Unable to update quantity."
+    );
+
+    return;
+
+  }
+
+
+  await loadCart();
+
+}
+
+
+/* =====================================================
+START
+===================================================== */
+
+await loadCart();
+
+</script>
+
+</body>
+</html>
