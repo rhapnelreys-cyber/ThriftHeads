@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <title>Payment Successful — THRIFTHEADS®</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+    }
+  </style>
+</head>
+
+<body class="bg-white text-black min-h-screen">
+
+  <main class="max-w-3xl mx-auto px-6 py-16">
+
+    <!-- LOGO -->
+    <div class="border-b pb-5">
+      <a
+        href="index.html"
+        class="font-black text-2xl tracking-tight"
+      >
+        THRIFTHEADS®
+      </a>
+    </div>
+
+    <!-- SUCCESS -->
+    <section class="text-center mt-20">
+
+      <div
+        class="mx-auto w-20 h-20 rounded-full bg-black text-white
+               flex items-center justify-center text-4xl font-black"
+      >
+        ✓
+      </div>
+
+      <h1 class="text-5xl font-black mt-8">
+        THANK YOU!
+      </h1>
+
+      <p class="text-xl mt-4">
+        Your payment was submitted successfully.
+      </p>
+
+      <p
+        id="status"
+        class="mt-3 text-neutral-500"
+      >
+        We're confirming your payment...
+      </p>
+
+    </section>
+
+    <!-- ORDER INFORMATION -->
+    <section
+      id="orderBox"
+      class="hidden mt-12 border p-6"
+    >
+
+      <h2 class="text-2xl font-black">
+        ORDER CONFIRMED
+      </h2>
+
+      <div class="mt-6 space-y-4">
+
+        <div>
+          <p class="text-xs uppercase tracking-widest text-neutral-500">
+            Order Number
+          </p>
+
+          <p
+            id="orderNumber"
+            class="font-bold mt-1"
+          >
+            —
+          </p>
+        </div>
+
+        <div>
+          <p class="text-xs uppercase tracking-widest text-neutral-500">
+            Total
+          </p>
+
+          <p
+            id="orderTotal"
+            class="font-bold mt-1"
+          >
+            —
+          </p>
+        </div>
+
+        <div>
+          <p class="text-xs uppercase tracking-widest text-neutral-500">
+            Payment Status
+          </p>
+
+          <p
+            id="paymentStatus"
+            class="font-bold mt-1"
+          >
+            Checking...
+          </p>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- BUTTONS -->
+    <div class="mt-10 flex justify-center gap-4 flex-wrap">
+
+      <a
+        href="orders.html"
+        class="bg-black text-white px-6 py-3 font-bold"
+      >
+        VIEW MY ORDERS
+      </a>
+
+      <a
+        href="shop.html"
+        class="border px-6 py-3 font-bold"
+      >
+        CONTINUE SHOPPING
+      </a>
+
+    </div>
+
+    <p
+      id="error"
+      class="text-red-600 text-center mt-8"
+    ></p>
+
+  </main>
+
+
+<script type="module">
+
+import { supabase } from "./js/supabase.js";
+import { getUser } from "./js/auth.js";
+
+const statusEl = document.querySelector("#status");
+const orderBox = document.querySelector("#orderBox");
+const orderNumberEl = document.querySelector("#orderNumber");
+const orderTotalEl = document.querySelector("#orderTotal");
+const paymentStatusEl = document.querySelector("#paymentStatus");
+const errorEl = document.querySelector("#error");
+
+
+async function loadOrder() {
+
+  try {
+
+    const user = await getUser();
+
+    if (!user) {
+
+      statusEl.textContent =
+        "Please log in to view your order.";
+
+      return;
+    }
+
+
+    /*
+      PayMongo redirects back with query parameters.
+
+      We support:
+
+      ?order_id=...
+      ?order=...
+      ?id=...
+    */
+
+    const params = new URLSearchParams(
+      window.location.search
+    );
+
+    const orderId =
+      params.get("order_id") ||
+      params.get("order") ||
+      params.get("id");
+
+
+    if (!orderId) {
+
+      statusEl.textContent =
+        "Your payment was submitted. Please check My Orders.";
+
+      return;
+    }
+
+
+    /*
+      IMPORTANT:
+
+      We only READ the order here.
+
+      The PayMongo webhook should update
+      payment_status in the database.
+    */
+
+    const { data, error } = await supabase
+
+      .from("orders")
+
+      .select(`
+        id,
+        order_number,
+        total,
+        payment_status,
+        status
+      `)
+
+      .eq("id", orderId)
+
+      .eq("user_id", user.id)
+
+      .single();
+
+
+    if (error) {
+
+      console.error(error);
+
+      statusEl.textContent =
+        "Your payment was submitted. We're still confirming it.";
+
+      return;
+    }
+
+
+    if (!data) {
+
+      statusEl.textContent =
+        "Order not found.";
+
+      return;
+    }
+
+
+    orderBox.classList.remove("hidden");
+
+
+    orderNumberEl.textContent =
+      data.order_number || "—";
+
+
+    orderTotalEl.textContent =
+      `₱${Number(data.total || 0).toFixed(2)}`;
+
+
+    const paymentStatus =
+      String(data.payment_status || "").toLowerCase();
+
+
+    /*
+      Different projects may use different
+      payment status values.
+    */
+
+    if (
+      paymentStatus === "paid" ||
+      paymentStatus === "succeeded" ||
+      paymentStatus === "completed"
+    ) {
+
+      paymentStatusEl.textContent =
+        "PAID";
+
+      paymentStatusEl.className =
+        "font-bold mt-1 text-green-600";
+
+      statusEl.textContent =
+        "Your payment has been confirmed. Your order is now being processed.";
+
+    } else {
+
+      paymentStatusEl.textContent =
+        data.payment_status || "Pending";
+
+      paymentStatusEl.className =
+        "font-bold mt-1";
+
+      statusEl.textContent =
+        "Your payment is being confirmed. This may take a moment.";
+
+    }
+
+  } catch (err) {
+
+    console.error(err);
+
+    errorEl.textContent =
+      err?.message ||
+      "Something went wrong while loading your order.";
+
+  }
+
+}
+
+
+loadOrder();
+
+</script>
+
+</body>
+</html>
