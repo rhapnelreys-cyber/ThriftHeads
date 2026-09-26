@@ -6,381 +6,1125 @@
   <title>Account — THRIFTHEADS®</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="bg-white text-black">
-  <main class="max-w-5xl mx-auto p-6">
-    <div class="flex justify-between items-center border-b pb-5">
-      <a href="index.html" class="font-black text-xl">THRIFTHEADS®</a>
-      <button id="logout" class="underline">Logout</button>
-    </div>
 
-    <h1 class="text-5xl font-black mt-16">MY ACCOUNT</h1>
+<main class="max-w-5xl mx-auto p-6">
 
-    <section class="mt-10 border p-6">
-      <div class="flex justify-between items-center gap-4 flex-wrap">
-        <div>
-          <h2 class="text-2xl font-black">PROFILE</h2>
-          <p class="text-neutral-500 mt-1">Your account information</p>
-        </div>
-        <button id="editProfileBtn" class="bg-black text-white px-5 py-3 font-bold">
-          EDIT PROFILE
-        </button>
+  <!-- HEADER -->
+  <div class="flex justify-between items-center border-b pb-5">
+    <a href="index.html" class="font-black text-xl">
+      THRIFTHEADS®
+    </a>
+
+    <button id="logout" class="underline">
+      Logout
+    </button>
+  </div>
+
+  <h1 class="text-5xl font-black mt-16">
+    MY ACCOUNT
+  </h1>
+
+
+  <!-- ================= PROFILE ================= -->
+  <section class="mt-10 border p-6">
+
+    <div class="flex justify-between items-center gap-4 flex-wrap">
+      <div>
+        <h2 class="text-2xl font-black">
+          PROFILE
+        </h2>
+
+        <p class="text-neutral-500 mt-1">
+          Your account information
+        </p>
       </div>
 
-      <div id="profile" class="mt-6 grid md:grid-cols-2 gap-4"></div>
+      <button
+        id="editProfileBtn"
+        class="bg-black text-white px-5 py-3 font-bold"
+      >
+        EDIT PROFILE
+      </button>
+    </div>
 
-      <form id="profileForm" class="hidden mt-6 space-y-4">
-        <div class="grid md:grid-cols-2 gap-4">
-          <input id="firstName" required placeholder="First name" class="border p-3 w-full">
-          <input id="lastName" required placeholder="Last name" class="border p-3 w-full">
-        </div>
-        <input id="phone" placeholder="Phone number" class="border p-3 w-full">
-        <div class="flex gap-3">
-          <button type="submit" class="bg-black text-white px-5 py-3 font-bold">SAVE PROFILE</button>
-          <button type="button" id="cancelProfile" class="border px-5 py-3">CANCEL</button>
-        </div>
-        <p id="profileMsg" class="text-sm"></p>
-      </form>
-    </section>
 
-    <section class="mt-8 border p-6">
-      <div class="flex justify-between items-center gap-4 flex-wrap">
-        <div>
-          <h2 class="text-2xl font-black">MY ADDRESSES</h2>
-          <p class="text-neutral-500 mt-1">Save addresses for faster checkout.</p>
-        </div>
-        <button id="addAddressBtn" class="bg-black text-white px-5 py-3 font-bold">
-          + ADD ADDRESS
-        </button>
+    <div
+      id="profile"
+      class="mt-6 grid md:grid-cols-2 gap-4"
+    ></div>
+
+
+    <!-- EDIT PROFILE -->
+    <form
+      id="profileForm"
+      class="hidden mt-6 space-y-4"
+    >
+
+      <div class="grid md:grid-cols-2 gap-4">
+
+        <input
+          id="firstName"
+          required
+          placeholder="First name"
+          class="border p-3 w-full"
+        >
+
+        <input
+          id="lastName"
+          required
+          placeholder="Last name"
+          class="border p-3 w-full"
+        >
+
       </div>
 
-      <div id="addresses" class="mt-6 grid md:grid-cols-2 gap-4"></div>
 
-      <form id="addressForm" class="hidden mt-6 border-t pt-6 space-y-4">
-        <h3 id="addressFormTitle" class="text-xl font-black">ADD ADDRESS</h3>
+      <input
+        id="phone"
+        placeholder="Phone number"
+        class="border p-3 w-full"
+      >
 
-        <div class="grid md:grid-cols-2 gap-4">
-          <input id="addressLabel" required placeholder="Label (Home, School, Work)" class="border p-3 w-full">
-          <input id="addressName" required placeholder="Recipient full name" class="border p-3 w-full">
-        </div>
 
-        <input id="addressPhone" required placeholder="Phone number" class="border p-3 w-full">
-        <input id="houseAddress" required placeholder="House / Building / Street" class="border p-3 w-full">
-        <input id="barangay" required placeholder="Barangay" class="border p-3 w-full">
+      <div class="flex gap-3">
 
-        <div class="grid md:grid-cols-3 gap-4">
-          <input id="city" required placeholder="City / Municipality" class="border p-3 w-full">
-          <input id="province" required placeholder="Province" class="border p-3 w-full">
-          <input id="postalCode" required placeholder="Postal code" class="border p-3 w-full">
-        </div>
+        <button
+          type="submit"
+          class="bg-black text-white px-5 py-3 font-bold"
+        >
+          SAVE PROFILE
+        </button>
 
-        <label class="flex items-center gap-2">
-          <input id="defaultAddress" type="checkbox">
-          Set as default address
-        </label>
+        <button
+          type="button"
+          id="cancelProfile"
+          class="border px-5 py-3"
+        >
+          CANCEL
+        </button>
 
-        <div class="flex gap-3">
-          <button type="submit" class="bg-black text-white px-5 py-3 font-bold">SAVE ADDRESS</button>
-          <button type="button" id="cancelAddress" class="border px-5 py-3">CANCEL</button>
-        </div>
+      </div>
 
-        <p id="addressMsg" class="text-sm"></p>
-      </form>
-    </section>
+      <p id="profileMsg" class="text-sm"></p>
 
-    <div class="mt-8 flex gap-4 flex-wrap">
-      <a class="border px-5 py-3" href="orders.html">My Orders</a>
-      <a class="border px-5 py-3" href="cart.html">Cart</a>
-      <a class="border px-5 py-3" href="shop.html">Shop</a>
+    </form>
+
+  </section>
+
+
+
+  <!-- ================= ADDRESSES ================= -->
+  <section class="mt-8 border p-6">
+
+    <div class="flex justify-between items-center gap-4 flex-wrap">
+
+      <div>
+
+        <h2 class="text-2xl font-black">
+          MY ADDRESSES
+        </h2>
+
+        <p class="text-neutral-500 mt-1">
+          Save addresses for faster checkout.
+        </p>
+
+      </div>
+
+
+      <button
+        id="addAddressBtn"
+        class="bg-black text-white px-5 py-3 font-bold"
+      >
+        + ADD ADDRESS
+      </button>
+
     </div>
-  </main>
+
+
+    <!-- SAVED ADDRESSES -->
+    <div
+      id="addresses"
+      class="mt-6 grid md:grid-cols-2 gap-4"
+    ></div>
+
+
+    <!-- ADDRESS FORM -->
+    <form
+      id="addressForm"
+      class="hidden mt-6 border-t pt-6 space-y-4"
+    >
+
+      <h3
+        id="addressFormTitle"
+        class="text-xl font-black"
+      >
+        ADD ADDRESS
+      </h3>
+
+
+      <!-- LABEL + RECIPIENT -->
+      <div class="grid md:grid-cols-2 gap-4">
+
+        <input
+          id="addressLabel"
+          required
+          placeholder="Label (Home, School, Work)"
+          class="border p-3 w-full"
+        >
+
+        <input
+          id="addressName"
+          required
+          placeholder="Recipient full name"
+          class="border p-3 w-full"
+        >
+
+      </div>
+
+
+      <!-- PHONE -->
+      <input
+        id="addressPhone"
+        required
+        placeholder="Phone number"
+        class="border p-3 w-full"
+      >
+
+
+      <!-- HOUSE / STREET -->
+      <input
+        id="houseAddress"
+        required
+        placeholder="House / Building / Street"
+        class="border p-3 w-full"
+      >
+
+
+      <!-- BARANGAY -->
+      <input
+        id="barangay"
+        required
+        placeholder="Barangay"
+        class="border p-3 w-full"
+      >
+
+
+      <!-- CITY / PROVINCE / ZIP -->
+      <div class="grid md:grid-cols-3 gap-4">
+
+        <input
+          id="city"
+          required
+          placeholder="City / Municipality"
+          class="border p-3 w-full"
+        >
+
+        <input
+          id="province"
+          required
+          placeholder="Province"
+          class="border p-3 w-full"
+        >
+
+        <input
+          id="postalCode"
+          required
+          placeholder="Postal code"
+          class="border p-3 w-full"
+        >
+
+      </div>
+
+
+      <!-- DEFAULT -->
+      <label class="flex items-center gap-2">
+
+        <input
+          id="defaultAddress"
+          type="checkbox"
+        >
+
+        Set as default address
+
+      </label>
+
+
+      <!-- BUTTONS -->
+      <div class="flex gap-3">
+
+        <button
+          type="submit"
+          class="bg-black text-white px-5 py-3 font-bold"
+        >
+          SAVE ADDRESS
+        </button>
+
+        <button
+          type="button"
+          id="cancelAddress"
+          class="border px-5 py-3"
+        >
+          CANCEL
+        </button>
+
+      </div>
+
+
+      <p id="addressMsg" class="text-sm"></p>
+
+    </form>
+
+  </section>
+
+
+
+  <!-- NAVIGATION -->
+  <div class="mt-8 flex gap-4 flex-wrap">
+
+    <a
+      class="border px-5 py-3"
+      href="orders.html"
+    >
+      My Orders
+    </a>
+
+    <a
+      class="border px-5 py-3"
+      href="cart.html"
+    >
+      Cart
+    </a>
+
+    <a
+      class="border px-5 py-3"
+      href="shop.html"
+    >
+      Shop
+    </a>
+
+  </div>
+
+</main>
+
+
 
 <script type="module">
+
 import { supabase } from "./js/supabase.js";
 import { logout } from "./js/auth.js";
 import { requireUser } from "./js/utils.js";
 
+
+/* ================= USER ================= */
+
 const user = await requireUser(supabase);
 
-const profileEl = document.querySelector("#profile");
-const addressesEl = document.querySelector("#addresses");
-const profileForm = document.querySelector("#profileForm");
-const addressForm = document.querySelector("#addressForm");
-const profileMsg = document.querySelector("#profileMsg");
-const addressMsg = document.querySelector("#addressMsg");
-
-let profile = null;
-let editingAddressId = null;
-
-function esc(value) {
-  const div = document.createElement("div");
-  div.textContent = value ?? "";
-  return div.innerHTML;
+if (!user) {
+  throw new Error("User not authenticated.");
 }
 
+
+/* ================= ELEMENTS ================= */
+
+const profileEl =
+  document.querySelector("#profile");
+
+const addressesEl =
+  document.querySelector("#addresses");
+
+const profileForm =
+  document.querySelector("#profileForm");
+
+const addressForm =
+  document.querySelector("#addressForm");
+
+const profileMsg =
+  document.querySelector("#profileMsg");
+
+const addressMsg =
+  document.querySelector("#addressMsg");
+
+
+let editingAddressId = null;
+
+
+/* ================= ESCAPE HTML ================= */
+
+function esc(value) {
+
+  const div = document.createElement("div");
+
+  div.textContent = value ?? "";
+
+  return div.innerHTML;
+
+}
+
+
+/* ================= MESSAGE ================= */
+
 function showMessage(el, text, error = false) {
+
   el.textContent = text;
+
   el.className = error
     ? "text-sm text-red-600"
     : "text-sm text-green-600";
+
 }
+
+
+/* ================= CLEAR ADDRESS ================= */
 
 function clearAddressForm() {
+
   editingAddressId = null;
-  document.querySelector("#addressFormTitle").textContent = "ADD ADDRESS";
+
+  document.querySelector("#addressFormTitle").textContent =
+    "ADD ADDRESS";
+
   document.querySelector("#addressLabel").value = "";
+
   document.querySelector("#addressName").value = "";
+
   document.querySelector("#addressPhone").value = "";
+
   document.querySelector("#houseAddress").value = "";
+
   document.querySelector("#barangay").value = "";
+
   document.querySelector("#city").value = "";
+
   document.querySelector("#province").value = "";
+
   document.querySelector("#postalCode").value = "";
+
   document.querySelector("#defaultAddress").checked = false;
+
   addressMsg.textContent = "";
+
 }
+
+
+/* ================= FILL ADDRESS ================= */
 
 function fillAddressForm(a) {
+
   editingAddressId = a.id;
-  document.querySelector("#addressFormTitle").textContent = "EDIT ADDRESS";
-  document.querySelector("#addressLabel").value = a.label || "";
-  document.querySelector("#addressName").value = a.full_name || "";
-  document.querySelector("#addressPhone").value = a.phone || "";
-  document.querySelector("#houseAddress").value = a.house_address || "";
-  document.querySelector("#barangay").value = a.barangay || "";
-  document.querySelector("#city").value = a.city || "";
-  document.querySelector("#province").value = a.province || "";
-  document.querySelector("#postalCode").value = a.postal_code || "";
-  document.querySelector("#defaultAddress").checked = !!a.is_default;
+
+  document.querySelector("#addressFormTitle").textContent =
+    "EDIT ADDRESS";
+
+
+  document.querySelector("#addressLabel").value =
+    a.label || "";
+
+
+  /*
+    IMPORTANT:
+    Database uses recipient_name
+    NOT full_name
+  */
+
+  document.querySelector("#addressName").value =
+    a.recipient_name || "";
+
+
+  document.querySelector("#addressPhone").value =
+    a.phone || "";
+
+
+  document.querySelector("#houseAddress").value =
+    a.house_address || "";
+
+
+  document.querySelector("#barangay").value =
+    a.barangay || "";
+
+
+  document.querySelector("#city").value =
+    a.city || "";
+
+
+  document.querySelector("#province").value =
+    a.province || "";
+
+
+  document.querySelector("#postalCode").value =
+    a.postal_code || "";
+
+
+  document.querySelector("#defaultAddress").checked =
+    !!a.is_default;
+
+
   addressForm.classList.remove("hidden");
-  addressForm.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  addressForm.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+
 }
+
+
+/* ================= LOAD PROFILE ================= */
 
 async function loadProfile() {
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single();
+
+  const { data, error } =
+    await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+
 
   if (error) {
-    profileEl.innerHTML = `<p class="text-red-600">${esc(error.message)}</p>`;
-    return;
-  }
 
-  profile = data;
-
-  profileEl.innerHTML = `
-    <div>
-      <p class="text-xs uppercase tracking-widest text-neutral-500">Name</p>
-      <p class="font-bold mt-1">${esc(`${data?.first_name || ""} ${data?.last_name || ""}`.trim() || "—")}</p>
-    </div>
-    <div>
-      <p class="text-xs uppercase tracking-widest text-neutral-500">Email</p>
-      <p class="font-bold mt-1">${esc(user.email)}</p>
-    </div>
-    <div>
-      <p class="text-xs uppercase tracking-widest text-neutral-500">Phone</p>
-      <p class="font-bold mt-1">${esc(data?.phone || "—")}</p>
-    </div>
-  `;
-
-  document.querySelector("#firstName").value = data?.first_name || "";
-  document.querySelector("#lastName").value = data?.last_name || "";
-  document.querySelector("#phone").value = data?.phone || "";
-}
-
-async function loadAddresses() {
-  const { data, error } = await supabase
-    .from("addresses")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("is_default", { ascending: false })
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    addressesEl.innerHTML = `
+    profileEl.innerHTML = `
       <p class="text-red-600">
         ${esc(error.message)}
       </p>
     `;
+
     return;
   }
 
-  if (!data?.length) {
-    addressesEl.innerHTML = `
-      <div class="border border-dashed p-8 md:col-span-2 text-center">
-        <p class="font-bold">No saved addresses yet.</p>
-        <p class="text-neutral-500 mt-1">Add your delivery address for faster checkout.</p>
-      </div>
-    `;
-    return;
-  }
 
-  addressesEl.innerHTML = data.map(a => `
-    <article class="border p-5">
-      <div class="flex justify-between gap-3">
-        <div>
-          <h3 class="font-black text-lg">${esc(a.label)}</h3>
-          ${a.is_default ? '<span class="inline-block mt-2 text-xs bg-black text-white px-2 py-1">DEFAULT</span>' : ''}
-        </div>
-        <div class="flex gap-3">
-          <button data-edit="${a.id}" class="underline">Edit</button>
-          <button data-delete="${a.id}" class="underline">Delete</button>
-        </div>
-      </div>
+  profileEl.innerHTML = `
 
-      <div class="mt-4 text-sm leading-6">
-        <p class="font-bold">${esc(a.full_name)}</p>
-        <p>${esc(a.phone)}</p>
-        <p>${esc(a.house_address)}</p>
-        <p>${esc(a.barangay)}, ${esc(a.city)}</p>
-        <p>${esc(a.province)} ${esc(a.postal_code)}</p>
-      </div>
+    <div>
 
-      ${a.is_default ? "" : `<button data-default="${a.id}" class="mt-4 border px-4 py-2 text-sm">Set as Default</button>`}
-    </article>
-  `).join("");
+      <p class="text-xs uppercase tracking-widest text-neutral-500">
+        Name
+      </p>
 
-  addressesEl.querySelectorAll("[data-edit]").forEach(btn => {
-    btn.onclick = () => {
-      const address = data.find(a => a.id === btn.dataset.edit);
-      if (address) fillAddressForm(address);
-    };
-  });
+      <p class="font-bold mt-1">
+        ${esc(
+          `${data?.first_name || ""} ${data?.last_name || ""}`
+          .trim() || "—"
+        )}
+      </p>
 
-  addressesEl.querySelectorAll("[data-delete]").forEach(btn => {
-    btn.onclick = async () => {
-      if (!confirm("Delete this address?")) return;
+    </div>
 
-      const { error } = await supabase
-        .from("addresses")
-        .delete()
-        .eq("id", btn.dataset.delete)
-        .eq("user_id", user.id);
 
-      if (error) {
-        alert(error.message);
-        return;
-      }
+    <div>
 
-      await loadAddresses();
-    };
-  });
+      <p class="text-xs uppercase tracking-widest text-neutral-500">
+        Email
+      </p>
 
-  addressesEl.querySelectorAll("[data-default]").forEach(btn => {
-    btn.onclick = async () => {
-      const { error } = await supabase
-        .from("addresses")
-        .update({ is_default: true })
-        .eq("id", btn.dataset.default)
-        .eq("user_id", user.id);
+      <p class="font-bold mt-1">
+        ${esc(user.email)}
+      </p>
 
-      if (error) {
-        alert(error.message);
-        return;
-      }
+    </div>
 
-      await loadAddresses();
-    };
-  });
+
+    <div>
+
+      <p class="text-xs uppercase tracking-widest text-neutral-500">
+        Phone
+      </p>
+
+      <p class="font-bold mt-1">
+        ${esc(data?.phone || "—")}
+      </p>
+
+    </div>
+
+  `;
+
+
+  document.querySelector("#firstName").value =
+    data?.first_name || "";
+
+
+  document.querySelector("#lastName").value =
+    data?.last_name || "";
+
+
+  document.querySelector("#phone").value =
+    data?.phone || "";
+
 }
 
-document.querySelector("#editProfileBtn").onclick = () => {
-  profileForm.classList.remove("hidden");
-  profileForm.scrollIntoView({ behavior: "smooth", block: "start" });
-};
 
-document.querySelector("#cancelProfile").onclick = () => {
-  profileForm.classList.add("hidden");
-  profileMsg.textContent = "";
-};
+/* ================= LOAD ADDRESSES ================= */
 
-profileForm.onsubmit = async (e) => {
-  e.preventDefault();
+async function loadAddresses() {
 
-  const { error } = await supabase
-    .from("profiles")
-    .update({
-      first_name: document.querySelector("#firstName").value.trim(),
-      last_name: document.querySelector("#lastName").value.trim(),
-      phone: document.querySelector("#phone").value.trim() || null
-    })
-    .eq("id", user.id);
+  const { data, error } =
+    await supabase
+      .from("addresses")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("is_default", {
+        ascending: false
+      })
+      .order("created_at", {
+        ascending: false
+      });
+
 
   if (error) {
-    showMessage(profileMsg, error.message, true);
+
+    addressesEl.innerHTML = `
+
+      <p class="text-red-600">
+        ${esc(error.message)}
+      </p>
+
+    `;
+
     return;
   }
 
-  showMessage(profileMsg, "Profile updated.");
-  profileForm.classList.add("hidden");
-  await loadProfile();
-};
 
-document.querySelector("#addAddressBtn").onclick = () => {
-  clearAddressForm();
-  addressForm.classList.remove("hidden");
-  addressForm.scrollIntoView({ behavior: "smooth", block: "start" });
-};
+  if (!data?.length) {
 
-document.querySelector("#cancelAddress").onclick = () => {
-  addressForm.classList.add("hidden");
-  clearAddressForm();
-};
+    addressesEl.innerHTML = `
 
-addressForm.onsubmit = async (e) => {
-  e.preventDefault();
+      <div
+        class="border border-dashed p-8 md:col-span-2 text-center"
+      >
 
-  const payload = {
-    user_id: user.id,
-    label: document.querySelector("#addressLabel").value.trim(),
-    full_name: document.querySelector("#addressName").value.trim(),
-    phone: document.querySelector("#addressPhone").value.trim(),
-    house_address: document.querySelector("#houseAddress").value.trim(),
-    barangay: document.querySelector("#barangay").value.trim(),
-    city: document.querySelector("#city").value.trim(),
-    province: document.querySelector("#province").value.trim(),
-    postal_code: document.querySelector("#postalCode").value.trim(),
-    is_default: document.querySelector("#defaultAddress").checked
-  };
+        <p class="font-bold">
+          No saved addresses yet.
+        </p>
 
-  if (editingAddressId) {
-    const { error } = await supabase
-      .from("addresses")
-      .update(payload)
-      .eq("id", editingAddressId)
-      .eq("user_id", user.id);
+        <p class="text-neutral-500 mt-1">
+          Add your delivery address for faster checkout.
+        </p>
 
-    if (error) {
-      showMessage(addressMsg, error.message, true);
-      return;
-    }
-  } else {
-    const { error } = await supabase
-      .from("addresses")
-      .insert(payload);
+      </div>
 
-    if (error) {
-      showMessage(addressMsg, error.message, true);
-      return;
-    }
+    `;
+
+    return;
   }
 
-  showMessage(addressMsg, "Address saved.");
+
+  addressesEl.innerHTML = data.map(a => `
+
+    <article class="border p-5">
+
+      <div class="flex justify-between gap-3">
+
+        <div>
+
+          <h3 class="font-black text-lg">
+            ${esc(a.label)}
+          </h3>
+
+          ${
+            a.is_default
+              ? `
+                <span
+                  class="inline-block mt-2 text-xs bg-black text-white px-2 py-1"
+                >
+                  DEFAULT
+                </span>
+              `
+              : ""
+          }
+
+        </div>
+
+
+        <div class="flex gap-3">
+
+          <button
+            data-edit="${a.id}"
+            class="underline"
+          >
+            Edit
+          </button>
+
+          <button
+            data-delete="${a.id}"
+            class="underline"
+          >
+            Delete
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <div class="mt-4 text-sm leading-6">
+
+        <p class="font-bold">
+          ${esc(a.recipient_name)}
+        </p>
+
+        <p>
+          ${esc(a.phone)}
+        </p>
+
+        <p>
+          ${esc(a.house_address)}
+        </p>
+
+        <p>
+          ${esc(a.barangay)}, ${esc(a.city)}
+        </p>
+
+        <p>
+          ${esc(a.province)} ${esc(a.postal_code)}
+        </p>
+
+      </div>
+
+
+      ${
+        a.is_default
+          ? ""
+          : `
+            <button
+              data-default="${a.id}"
+              class="mt-4 border px-4 py-2 text-sm"
+            >
+              Set as Default
+            </button>
+          `
+      }
+
+    </article>
+
+  `).join("");
+
+
+  /* ================= EDIT ================= */
+
+  addressesEl
+    .querySelectorAll("[data-edit]")
+    .forEach(btn => {
+
+      btn.onclick = () => {
+
+        const address =
+          data.find(a =>
+            a.id === btn.dataset.edit
+          );
+
+        if (address) {
+          fillAddressForm(address);
+        }
+
+      };
+
+    });
+
+
+  /* ================= DELETE ================= */
+
+  addressesEl
+    .querySelectorAll("[data-delete]")
+    .forEach(btn => {
+
+      btn.onclick = async () => {
+
+        if (!confirm("Delete this address?")) {
+          return;
+        }
+
+
+        const { error } =
+          await supabase
+            .from("addresses")
+            .delete()
+            .eq("id", btn.dataset.delete)
+            .eq("user_id", user.id);
+
+
+        if (error) {
+
+          alert(error.message);
+
+          return;
+        }
+
+
+        await loadAddresses();
+
+      };
+
+    });
+
+
+  /* ================= SET DEFAULT ================= */
+
+  addressesEl
+    .querySelectorAll("[data-default]")
+    .forEach(btn => {
+
+      btn.onclick = async () => {
+
+        const id = btn.dataset.default;
+
+
+        /*
+          First remove default from
+          all user's addresses.
+        */
+
+        const { error: clearError } =
+          await supabase
+            .from("addresses")
+            .update({
+              is_default: false
+            })
+            .eq("user_id", user.id);
+
+
+        if (clearError) {
+
+          alert(clearError.message);
+
+          return;
+        }
+
+
+        /*
+          Then set selected address
+          as default.
+        */
+
+        const { error } =
+          await supabase
+            .from("addresses")
+            .update({
+              is_default: true
+            })
+            .eq("id", id)
+            .eq("user_id", user.id);
+
+
+        if (error) {
+
+          alert(error.message);
+
+          return;
+        }
+
+
+        await loadAddresses();
+
+      };
+
+    });
+
+}
+
+
+/* ================= EDIT PROFILE ================= */
+
+document.querySelector("#editProfileBtn").onclick = () => {
+
+  profileForm.classList.remove("hidden");
+
+  profileForm.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+
+};
+
+
+/* ================= CANCEL PROFILE ================= */
+
+document.querySelector("#cancelProfile").onclick = () => {
+
+  profileForm.classList.add("hidden");
+
+  profileMsg.textContent = "";
+
+};
+
+
+/* ================= SAVE PROFILE ================= */
+
+profileForm.onsubmit = async e => {
+
+  e.preventDefault();
+
+
+  const { error } =
+    await supabase
+      .from("profiles")
+      .update({
+
+        first_name:
+          document
+            .querySelector("#firstName")
+            .value
+            .trim(),
+
+        last_name:
+          document
+            .querySelector("#lastName")
+            .value
+            .trim(),
+
+        phone:
+          document
+            .querySelector("#phone")
+            .value
+            .trim() || null
+
+      })
+      .eq("id", user.id);
+
+
+  if (error) {
+
+    showMessage(
+      profileMsg,
+      error.message,
+      true
+    );
+
+    return;
+  }
+
+
+  showMessage(
+    profileMsg,
+    "Profile updated."
+  );
+
+
+  profileForm.classList.add("hidden");
+
+  await loadProfile();
+
+};
+
+
+/* ================= ADD ADDRESS ================= */
+
+document.querySelector("#addAddressBtn").onclick = () => {
+
+  clearAddressForm();
+
+  addressForm.classList.remove("hidden");
+
+  addressForm.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+
+};
+
+
+/* ================= CANCEL ADDRESS ================= */
+
+document.querySelector("#cancelAddress").onclick = () => {
+
+  addressForm.classList.add("hidden");
+
+  clearAddressForm();
+
+};
+
+
+/* ================= SAVE ADDRESS ================= */
+
+addressForm.onsubmit = async e => {
+
+  e.preventDefault();
+
+
+  const makeDefault =
+    document
+      .querySelector("#defaultAddress")
+      .checked;
+
+
+  /*
+    If this address should be the default,
+    first remove default from the
+    user's other addresses.
+  */
+
+  if (makeDefault) {
+
+    const { error: clearError } =
+      await supabase
+        .from("addresses")
+        .update({
+          is_default: false
+        })
+        .eq("user_id", user.id);
+
+
+    if (clearError) {
+
+      showMessage(
+        addressMsg,
+        clearError.message,
+        true
+      );
+
+      return;
+    }
+
+  }
+
+
+  /* ================= PAYLOAD ================= */
+
+  const payload = {
+
+    user_id: user.id,
+
+    label:
+      document
+        .querySelector("#addressLabel")
+        .value
+        .trim(),
+
+    /*
+      IMPORTANT:
+      This matches the database column.
+    */
+
+    recipient_name:
+      document
+        .querySelector("#addressName")
+        .value
+        .trim(),
+
+    phone:
+      document
+        .querySelector("#addressPhone")
+        .value
+        .trim(),
+
+    house_address:
+      document
+        .querySelector("#houseAddress")
+        .value
+        .trim(),
+
+    barangay:
+      document
+        .querySelector("#barangay")
+        .value
+        .trim(),
+
+    city:
+      document
+        .querySelector("#city")
+        .value
+        .trim(),
+
+    province:
+      document
+        .querySelector("#province")
+        .value
+        .trim(),
+
+    postal_code:
+      document
+        .querySelector("#postalCode")
+        .value
+        .trim(),
+
+    is_default:
+      makeDefault
+
+  };
+
+
+  /* ================= UPDATE ================= */
+
+  if (editingAddressId) {
+
+    const { error } =
+      await supabase
+        .from("addresses")
+        .update(payload)
+        .eq("id", editingAddressId)
+        .eq("user_id", user.id);
+
+
+    if (error) {
+
+      showMessage(
+        addressMsg,
+        error.message,
+        true
+      );
+
+      return;
+    }
+
+
+  }
+
+  /* ================= INSERT ================= */
+
+  else {
+
+    const { error } =
+      await supabase
+        .from("addresses")
+        .insert(payload);
+
+
+    if (error) {
+
+      showMessage(
+        addressMsg,
+        error.message,
+        true
+      );
+
+      return;
+    }
+
+  }
+
+
+  showMessage(
+    addressMsg,
+    "Address saved successfully."
+  );
+
+
   await loadAddresses();
 
+
   setTimeout(() => {
+
     addressForm.classList.add("hidden");
+
     clearAddressForm();
+
   }, 500);
+
 };
+
+
+/* ================= LOGOUT ================= */
 
 document.querySelector("#logout").onclick = logout;
 
-if (user) {
-  await loadProfile();
-  await loadAddresses();
-}
+
+/* ================= INITIAL LOAD ================= */
+
+await loadProfile();
+
+await loadAddresses();
+
 </script>
+
 </body>
 </html>
