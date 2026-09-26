@@ -1,1 +1,1248 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dashboard — THRIFTHEADS®</title><script src="https://cdn.tailwindcss.com"></script></head><body><header class="bg-black text-white p-5 flex justify-between"><b>THRIFTHEADS® ADMIN</b><nav class="flex gap-5 text-sm"><a href="products.html">Products</a><a href="orders.html">Orders</a><a href="sales.html">Sales</a><a href="../index.html">Store</a></nav></header><main class="max-w-7xl mx-auto p-6"><h1 class="text-5xl font-black">DASHBOARD</h1><div class="grid md:grid-cols-3 gap-5 mt-10"><div class="border p-6"><p>Sales</p><b id="sales" class="text-4xl">—</b></div><div class="border p-6"><p>Orders</p><b id="orders" class="text-4xl">—</b></div><div class="border p-6"><p>Products</p><b id="products" class="text-4xl">—</b></div></div></main><script type="module" src="../js/admin/dashboard.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>THRIFTHEADS® ADMIN</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body {
+      background: #f5f5f5;
+    }
+
+    .sidebar {
+      width: 250px;
+    }
+
+    @media(max-width: 900px) {
+      .sidebar {
+        width: 75px;
+      }
+
+      .sidebar .label {
+        display: none;
+      }
+    }
+
+    .card {
+      background: white;
+      border: 1px solid #e5e5e5;
+      border-radius: 14px;
+    }
+
+    .stat-card {
+      transition: .2s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,0,0,.06);
+    }
+  </style>
+</head>
+
+<body class="text-black">
+
+<div class="flex min-h-screen">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar bg-black text-white fixed left-0 top-0 bottom-0 z-50">
+
+    <div class="h-20 flex items-center px-6 border-b border-neutral-800">
+      <div class="font-black text-xl">
+        THRIFTHEADS<span class="text-neutral-400">®</span>
+      </div>
+    </div>
+
+    <nav class="p-4 space-y-2">
+
+      <a href="dashboard.html"
+         class="flex items-center gap-4 px-4 py-3 rounded-lg bg-white text-black font-bold">
+        <span>▦</span>
+        <span class="label">Dashboard</span>
+      </a>
+
+      <a href="products.html"
+         class="flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-neutral-800">
+        <span>◈</span>
+        <span class="label">Products</span>
+      </a>
+
+      <a href="orders.html"
+         class="flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-neutral-800">
+        <span>▤</span>
+        <span class="label">Orders</span>
+      </a>
+
+      <a href="sales.html"
+         class="flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-neutral-800">
+        <span>↗</span>
+        <span class="label">Sales</span>
+      </a>
+
+      <a href="inventory.html"
+         class="flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-neutral-800">
+        <span>▣</span>
+        <span class="label">Inventory</span>
+      </a>
+
+      <div class="border-t border-neutral-800 my-5"></div>
+
+      <a href="../index.html"
+         class="flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-neutral-800">
+        <span>⌂</span>
+        <span class="label">View Store</span>
+      </a>
+
+      <button id="logoutBtn"
+         class="w-full flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-red-900 text-left">
+        <span>↪</span>
+        <span class="label">Logout</span>
+      </button>
+
+    </nav>
+
+  </aside>
+
+
+  <!-- MAIN -->
+  <main class="ml-[250px] flex-1 min-w-0">
+
+    <!-- TOP BAR -->
+    <header class="bg-white border-b h-20 flex items-center justify-between px-8 sticky top-0 z-40">
+
+      <div>
+        <h1 class="text-xl font-black">
+          ADMIN DASHBOARD
+        </h1>
+
+        <p class="text-xs text-neutral-500">
+          THRIFTHEADS® Store Management
+        </p>
+      </div>
+
+      <div class="flex items-center gap-4">
+
+        <button
+          onclick="loadDashboard()"
+          class="border px-4 py-2 rounded-lg font-bold hover:bg-neutral-100">
+          ↻ Refresh
+        </button>
+
+        <div class="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center font-black">
+          A
+        </div>
+
+      </div>
+
+    </header>
+
+
+    <!-- CONTENT -->
+    <section class="p-8">
+
+      <!-- WELCOME -->
+      <div class="mb-8">
+
+        <h2 class="text-4xl font-black">
+          DASHBOARD
+        </h2>
+
+        <p class="text-neutral-500 mt-1">
+          Overview of your THRIFTHEADS® store.
+        </p>
+
+      </div>
+
+
+      <!-- STAT CARDS -->
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+
+        <!-- SALES -->
+        <div class="card stat-card p-6">
+
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-sm text-neutral-500">
+                Total Sales
+              </p>
+
+              <h3 id="totalSales"
+                  class="text-3xl font-black mt-2">
+                ₱0.00
+              </h3>
+            </div>
+
+            <div class="bg-black text-white rounded-xl w-11 h-11 flex items-center justify-center">
+              ₱
+            </div>
+          </div>
+
+          <p class="text-xs text-neutral-400 mt-4">
+            From paid orders
+          </p>
+
+        </div>
+
+
+        <!-- ORDERS -->
+        <div class="card stat-card p-6">
+
+          <div class="flex justify-between items-start">
+
+            <div>
+              <p class="text-sm text-neutral-500">
+                Total Orders
+              </p>
+
+              <h3 id="totalOrders"
+                  class="text-3xl font-black mt-2">
+                0
+              </h3>
+            </div>
+
+            <div class="bg-black text-white rounded-xl w-11 h-11 flex items-center justify-center">
+              #
+            </div>
+
+          </div>
+
+          <p class="text-xs text-neutral-400 mt-4">
+            All orders
+          </p>
+
+        </div>
+
+
+        <!-- PRODUCTS -->
+        <div class="card stat-card p-6">
+
+          <div class="flex justify-between items-start">
+
+            <div>
+              <p class="text-sm text-neutral-500">
+                Products
+              </p>
+
+              <h3 id="totalProducts"
+                  class="text-3xl font-black mt-2">
+                0
+              </h3>
+            </div>
+
+            <div class="bg-black text-white rounded-xl w-11 h-11 flex items-center justify-center">
+              ◈
+            </div>
+
+          </div>
+
+          <p class="text-xs text-neutral-400 mt-4">
+            Products in catalog
+          </p>
+
+        </div>
+
+
+        <!-- LOW STOCK -->
+        <div class="card stat-card p-6">
+
+          <div class="flex justify-between items-start">
+
+            <div>
+              <p class="text-sm text-neutral-500">
+                Low Stock
+              </p>
+
+              <h3 id="lowStock"
+                  class="text-3xl font-black mt-2">
+                0
+              </h3>
+            </div>
+
+            <div class="bg-black text-white rounded-xl w-11 h-11 flex items-center justify-center">
+              !
+            </div>
+
+          </div>
+
+          <p class="text-xs text-neutral-400 mt-4">
+            Products needing attention
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- SECOND ROW -->
+      <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-6">
+
+
+        <!-- SALES SUMMARY -->
+        <div class="card p-6 xl:col-span-2">
+
+          <div class="flex items-center justify-between mb-6">
+
+            <div>
+              <h3 class="text-xl font-black">
+                Sales Overview
+              </h3>
+
+              <p class="text-sm text-neutral-500">
+                Store performance
+              </p>
+            </div>
+
+            <span
+              id="salesPeriod"
+              class="text-xs bg-neutral-100 px-3 py-2 rounded-full">
+              All Time
+            </span>
+
+          </div>
+
+
+          <div class="grid grid-cols-3 gap-4">
+
+            <div class="bg-neutral-50 rounded-xl p-5">
+
+              <p class="text-xs text-neutral-500">
+                Paid
+              </p>
+
+              <p id="paidOrders"
+                 class="text-2xl font-black mt-2">
+                0
+              </p>
+
+            </div>
+
+
+            <div class="bg-neutral-50 rounded-xl p-5">
+
+              <p class="text-xs text-neutral-500">
+                Pending
+              </p>
+
+              <p id="pendingOrders"
+                 class="text-2xl font-black mt-2">
+                0
+              </p>
+
+            </div>
+
+
+            <div class="bg-neutral-50 rounded-xl p-5">
+
+              <p class="text-xs text-neutral-500">
+                Revenue
+              </p>
+
+              <p id="revenue"
+                 class="text-2xl font-black mt-2">
+                ₱0
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <!-- SIMPLE SALES BARS -->
+          <div class="mt-8">
+
+            <div class="flex items-end gap-3 h-40"
+                 id="salesBars">
+
+              <div class="flex-1 bg-black rounded-t h-[10%]"></div>
+              <div class="flex-1 bg-black rounded-t h-[20%]"></div>
+              <div class="flex-1 bg-black rounded-t h-[35%]"></div>
+              <div class="flex-1 bg-black rounded-t h-[25%]"></div>
+              <div class="flex-1 bg-black rounded-t h-[50%]"></div>
+              <div class="flex-1 bg-black rounded-t h-[70%]"></div>
+              <div class="flex-1 bg-black rounded-t h-[40%]"></div>
+
+            </div>
+
+            <div class="flex justify-between text-xs text-neutral-400 mt-2">
+              <span>Mon</span>
+              <span>Tue</span>
+              <span>Wed</span>
+              <span>Thu</span>
+              <span>Fri</span>
+              <span>Sat</span>
+              <span>Sun</span>
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- QUICK ACTIONS -->
+        <div class="card p-6">
+
+          <h3 class="text-xl font-black">
+            Quick Actions
+          </h3>
+
+          <p class="text-sm text-neutral-500 mt-1">
+            Manage your store
+          </p>
+
+
+          <div class="space-y-3 mt-6">
+
+            <a href="products.html"
+               class="block border rounded-xl p-4 hover:bg-black hover:text-white transition">
+
+              <div class="font-bold">
+                + Add Product
+              </div>
+
+              <div class="text-xs opacity-60 mt-1">
+                Create a new thrift item
+              </div>
+
+            </a>
+
+
+            <a href="orders.html"
+               class="block border rounded-xl p-4 hover:bg-black hover:text-white transition">
+
+              <div class="font-bold">
+                View Orders
+              </div>
+
+              <div class="text-xs opacity-60 mt-1">
+                Manage customer orders
+              </div>
+
+            </a>
+
+
+            <a href="inventory.html"
+               class="block border rounded-xl p-4 hover:bg-black hover:text-white transition">
+
+              <div class="font-bold">
+                Inventory
+              </div>
+
+              <div class="text-xs opacity-60 mt-1">
+                Check stock levels
+              </div>
+
+            </a>
+
+
+            <a href="../index.html"
+               class="block border rounded-xl p-4 hover:bg-black hover:text-white transition">
+
+              <div class="font-bold">
+                View Store
+              </div>
+
+              <div class="text-xs opacity-60 mt-1">
+                Open THRIFTHEADS website
+              </div>
+
+            </a>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- BOTTOM GRID -->
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-6">
+
+
+        <!-- RECENT ORDERS -->
+        <div class="card overflow-hidden">
+
+          <div class="p-6 border-b flex justify-between items-center">
+
+            <div>
+              <h3 class="text-xl font-black">
+                Recent Orders
+              </h3>
+
+              <p class="text-sm text-neutral-500">
+                Latest customer purchases
+              </p>
+            </div>
+
+            <a href="orders.html"
+               class="text-sm font-bold underline">
+              View all
+            </a>
+
+          </div>
+
+
+          <div class="overflow-x-auto">
+
+            <table class="w-full text-sm">
+
+              <thead class="bg-neutral-50 text-left">
+
+                <tr>
+
+                  <th class="px-5 py-4">
+                    Order
+                  </th>
+
+                  <th class="px-5 py-4">
+                    Amount
+                  </th>
+
+                  <th class="px-5 py-4">
+                    Status
+                  </th>
+
+                </tr>
+
+              </thead>
+
+              <tbody id="ordersTable">
+
+                <tr>
+                  <td colspan="3"
+                      class="px-5 py-8 text-center text-neutral-400">
+                    Loading...
+                  </td>
+                </tr>
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </div>
+
+
+        <!-- LOW STOCK -->
+        <div class="card overflow-hidden">
+
+          <div class="p-6 border-b flex justify-between items-center">
+
+            <div>
+              <h3 class="text-xl font-black">
+                Inventory Alerts
+              </h3>
+
+              <p class="text-sm text-neutral-500">
+                Products running low
+              </p>
+            </div>
+
+            <a href="inventory.html"
+               class="text-sm font-bold underline">
+              Inventory
+            </a>
+
+          </div>
+
+
+          <div id="inventoryList"
+               class="divide-y">
+
+            <div class="p-6 text-center text-neutral-400">
+              Loading...
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- PRODUCTS -->
+      <div class="card mt-6 overflow-hidden">
+
+        <div class="p-6 border-b flex justify-between items-center">
+
+          <div>
+            <h3 class="text-xl font-black">
+              Product Catalog
+            </h3>
+
+            <p class="text-sm text-neutral-500">
+              Products currently listed in your store
+            </p>
+          </div>
+
+          <a href="products.html"
+             class="bg-black text-white px-5 py-3 rounded-lg font-bold">
+            Manage Products
+          </a>
+
+        </div>
+
+
+        <div class="overflow-x-auto">
+
+          <table class="w-full">
+
+            <thead class="bg-neutral-50 text-left text-sm">
+
+              <tr>
+
+                <th class="px-6 py-4">
+                  Product
+                </th>
+
+                <th class="px-6 py-4">
+                  SKU
+                </th>
+
+                <th class="px-6 py-4">
+                  Price
+                </th>
+
+                <th class="px-6 py-4">
+                  Stock
+                </th>
+
+                <th class="px-6 py-4">
+                  Status
+                </th>
+
+              </tr>
+
+            </thead>
+
+            <tbody id="productsTable">
+
+              <tr>
+
+                <td colspan="5"
+                    class="px-6 py-8 text-center text-neutral-400">
+                  Loading products...
+                </td>
+
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+
+      <!-- FOOTER -->
+      <div class="text-center text-xs text-neutral-400 py-10">
+        THRIFTHEADS® ADMIN • Store Management System
+      </div>
+
+    </section>
+
+  </main>
+
+</div>
+
+
+<script type="module">
+
+import { supabase } from "../js/supabase.js";
+import { getUser } from "../js/auth.js";
+
+
+/* --------------------------------
+   HELPERS
+-------------------------------- */
+
+function peso(value) {
+
+  return "₱" + Number(value || 0).toLocaleString("en-PH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+
+}
+
+
+function escapeHtml(value) {
+
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+
+}
+
+
+function statusBadge(status) {
+
+  const s = String(status || "unknown").toLowerCase();
+
+  let cls = "bg-neutral-100 text-neutral-700";
+
+  if (
+    s === "paid" ||
+    s === "completed" ||
+    s === "active"
+  ) {
+    cls = "bg-green-100 text-green-700";
+  }
+
+  if (
+    s === "pending" ||
+    s === "pending_payment" ||
+    s === "reserved"
+  ) {
+    cls = "bg-yellow-100 text-yellow-700";
+  }
+
+  if (
+    s === "failed" ||
+    s === "cancelled" ||
+    s === "canceled"
+  ) {
+    cls = "bg-red-100 text-red-700";
+  }
+
+  return `
+    <span class="inline-flex px-3 py-1 rounded-full text-xs font-bold ${cls}">
+      ${escapeHtml(status || "Unknown")}
+    </span>
+  `;
+
+}
+
+
+/* --------------------------------
+   LOAD DASHBOARD
+-------------------------------- */
+
+window.loadDashboard = async function() {
+
+  try {
+
+    /*
+      CURRENT USER
+    */
+
+    const user = await getUser();
+
+    if (!user) {
+
+      location.href = "../auth.html?redirect=admin/dashboard.html";
+
+      return;
+
+    }
+
+
+    /*
+      PRODUCTS
+    */
+
+    const {
+      data: products,
+      error: productsError
+    } = await supabase
+      .from("products")
+      .select(`
+        id,
+        name,
+        sku,
+        price,
+        stock,
+        status,
+        created_at,
+        is_one_of_one
+      `)
+      .order("created_at", {
+        ascending: false
+      });
+
+
+    if (productsError)
+      throw productsError;
+
+
+    const productList = products || [];
+
+
+    document.querySelector("#totalProducts")
+      .textContent = productList.length;
+
+
+    const lowStockProducts =
+      productList.filter(p =>
+        Number(p.stock || 0) <= 2 &&
+        p.status !== "sold"
+      );
+
+
+    document.querySelector("#lowStock")
+      .textContent = lowStockProducts.length;
+
+
+    /*
+      ORDERS
+    */
+
+    const {
+      data: orders,
+      error: ordersError
+    } = await supabase
+      .from("orders")
+      .select(`
+        id,
+        order_number,
+        total,
+        status,
+        payment_status,
+        created_at
+      `)
+      .order("created_at", {
+        ascending: false
+      });
+
+
+    if (ordersError)
+      throw ordersError;
+
+
+    const orderList = orders || [];
+
+
+    document.querySelector("#totalOrders")
+      .textContent = orderList.length;
+
+
+    /*
+      PAID ORDERS
+    */
+
+    const paid = orderList.filter(o => {
+
+      const payment = String(
+        o.payment_status || o.status || ""
+      ).toLowerCase();
+
+      return [
+        "paid",
+        "completed",
+        "processing",
+        "shipped"
+      ].includes(payment);
+
+    });
+
+
+    const pending = orderList.filter(o => {
+
+      const payment = String(
+        o.payment_status || o.status || ""
+      ).toLowerCase();
+
+      return [
+        "pending",
+        "pending_payment"
+      ].includes(payment);
+
+    });
+
+
+    document.querySelector("#paidOrders")
+      .textContent = paid.length;
+
+
+    document.querySelector("#pendingOrders")
+      .textContent = pending.length;
+
+
+    /*
+      TOTAL SALES
+    */
+
+    const totalSales = paid.reduce(
+      (sum, order) =>
+        sum + Number(order.total || 0),
+      0
+    );
+
+
+    document.querySelector("#totalSales")
+      .textContent = peso(totalSales);
+
+
+    document.querySelector("#revenue")
+      .textContent = peso(totalSales);
+
+
+    /*
+      RECENT ORDERS
+    */
+
+    const recentOrders =
+      orderList.slice(0, 8);
+
+
+    const ordersTable =
+      document.querySelector("#ordersTable");
+
+
+    if (!recentOrders.length) {
+
+      ordersTable.innerHTML = `
+        <tr>
+          <td colspan="3"
+              class="px-5 py-10 text-center text-neutral-400">
+            No orders yet.
+          </td>
+        </tr>
+      `;
+
+    } else {
+
+      ordersTable.innerHTML =
+        recentOrders.map(order => `
+
+          <tr class="border-t hover:bg-neutral-50">
+
+            <td class="px-5 py-4">
+
+              <div class="font-bold">
+                ${escapeHtml(order.order_number || order.id)}
+              </div>
+
+              <div class="text-xs text-neutral-400">
+                ${new Date(order.created_at).toLocaleDateString("en-PH")}
+              </div>
+
+            </td>
+
+            <td class="px-5 py-4 font-bold">
+              ${peso(order.total)}
+            </td>
+
+            <td class="px-5 py-4">
+
+              ${statusBadge(
+                order.payment_status ||
+                order.status
+              )}
+
+            </td>
+
+          </tr>
+
+        `).join("");
+
+    }
+
+
+    /*
+      INVENTORY ALERTS
+    */
+
+    const inventoryList =
+      document.querySelector("#inventoryList");
+
+
+    if (!lowStockProducts.length) {
+
+      inventoryList.innerHTML = `
+        <div class="p-8 text-center">
+
+          <div class="text-3xl">
+            ✓
+          </div>
+
+          <p class="font-bold mt-2">
+            Inventory looks good
+          </p>
+
+          <p class="text-sm text-neutral-400">
+            No products are running low.
+          </p>
+
+        </div>
+      `;
+
+    } else {
+
+      inventoryList.innerHTML =
+        lowStockProducts.slice(0, 8).map(product => `
+
+          <div class="p-5 flex items-center justify-between">
+
+            <div>
+
+              <p class="font-bold">
+                ${escapeHtml(product.name)}
+              </p>
+
+              <p class="text-xs text-neutral-400">
+                SKU: ${escapeHtml(product.sku || "N/A")}
+              </p>
+
+            </div>
+
+            <div class="text-right">
+
+              <p class="font-black ${
+                Number(product.stock) === 0
+                  ? "text-red-600"
+                  : "text-yellow-600"
+              }">
+
+                ${Number(product.stock || 0)} left
+
+              </p>
+
+              <p class="text-xs text-neutral-400">
+                ${peso(product.price)}
+              </p>
+
+            </div>
+
+          </div>
+
+        `).join("");
+
+    }
+
+
+    /*
+      PRODUCTS TABLE
+    */
+
+    const productsTable =
+      document.querySelector("#productsTable");
+
+
+    if (!productList.length) {
+
+      productsTable.innerHTML = `
+        <tr>
+          <td colspan="5"
+              class="px-6 py-10 text-center text-neutral-400">
+            No products found.
+          </td>
+        </tr>
+      `;
+
+    } else {
+
+      productsTable.innerHTML =
+        productList.slice(0, 20).map(product => {
+
+          let stockClass = "text-green-600";
+
+          if (Number(product.stock) <= 2)
+            stockClass = "text-red-600";
+
+          else if (Number(product.stock) <= 5)
+            stockClass = "text-yellow-600";
+
+
+          return `
+
+            <tr class="border-t hover:bg-neutral-50">
+
+              <td class="px-6 py-4">
+
+                <div class="font-bold">
+                  ${escapeHtml(product.name)}
+                </div>
+
+                ${
+                  product.is_one_of_one
+                    ? `
+                      <span class="text-[10px] font-black uppercase">
+                        ONE OF ONE
+                      </span>
+                    `
+                    : ""
+                }
+
+              </td>
+
+              <td class="px-6 py-4 text-sm text-neutral-500">
+                ${escapeHtml(product.sku || "—")}
+              </td>
+
+              <td class="px-6 py-4 font-bold">
+                ${peso(product.price)}
+              </td>
+
+              <td class="px-6 py-4">
+
+                <span class="font-black ${stockClass}">
+                  ${Number(product.stock || 0)}
+                </span>
+
+              </td>
+
+              <td class="px-6 py-4">
+
+                ${statusBadge(product.status)}
+
+              </td>
+
+            </tr>
+
+          `;
+
+        }).join("");
+
+    }
+
+
+    /*
+      SALES BAR VISUALIZATION
+      Last 7 days
+    */
+
+    const bars =
+      document.querySelector("#salesBars");
+
+    const days = [];
+
+    for (let i = 6; i >= 0; i--) {
+
+      const date = new Date();
+
+      date.setHours(0,0,0,0);
+
+      date.setDate(
+        date.getDate() - i
+      );
+
+      days.push(date);
+
+    }
+
+
+    const dailySales =
+      days.map(day => {
+
+        const next = new Date(day);
+
+        next.setDate(
+          next.getDate() + 1
+        );
+
+
+        return paid
+          .filter(order => {
+
+            const d =
+              new Date(order.created_at);
+
+            return d >= day && d < next;
+
+          })
+          .reduce(
+            (sum, order) =>
+              sum + Number(order.total || 0),
+            0
+          );
+
+      });
+
+
+    const maxSale =
+      Math.max(...dailySales, 1);
+
+
+    bars.innerHTML =
+      dailySales.map(value => {
+
+        const height =
+          Math.max(
+            5,
+            Math.round(
+              (value / maxSale) * 100
+            )
+          );
+
+
+        return `
+          <div
+            title="${peso(value)}"
+            class="flex-1 bg-black rounded-t hover:bg-neutral-700 transition"
+            style="height:${height}%">
+          </div>
+        `;
+
+      }).join("");
+
+
+    /*
+      DONE
+    */
+
+    console.log(
+      "THRIFTHEADS dashboard loaded."
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Dashboard error:",
+      error
+    );
+
+
+    document.querySelector("#ordersTable").innerHTML = `
+      <tr>
+        <td colspan="3"
+            class="px-5 py-8 text-center text-red-500">
+
+          Failed to load dashboard.
+
+          <br>
+
+          <span class="text-xs">
+            ${escapeHtml(error.message)}
+          </span>
+
+        </td>
+      </tr>
+    `;
+
+  }
+
+};
+
+
+/* --------------------------------
+   LOGOUT
+-------------------------------- */
+
+document.querySelector("#logoutBtn")
+  .addEventListener("click", async () => {
+
+    await supabase.auth.signOut();
+
+    location.href = "../index.html";
+
+  });
+
+
+/* --------------------------------
+   START
+-------------------------------- */
+
+loadDashboard();
+
+</script>
+
+</body>
+</html>
