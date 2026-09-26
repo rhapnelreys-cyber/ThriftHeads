@@ -1,126 +1,991 @@
 <!doctype html>
-<html>
+<html lang="en">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+
   <title>Product — THRIFTHEADS®</title>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-  <header class="border-b">
-    <nav class="max-w-7xl mx-auto px-5 py-4 flex justify-between">
-      <a class="font-black text-xl" href="index.html">THRIFTHEADS®</a>
-      <div class="flex gap-4">
-        <a href="shop.html">Shop</a>
-        <a href="cart.html">Cart</a>
-      </div>
-    </nav>
-  </header>
 
-  <main id="app" class="max-w-7xl mx-auto px-5 py-12">
-    <p>Loading product...</p>
-  </main>
 
-  <script type="module">
-    import { supabase } from "./js/supabase.js";
-    import { getUser } from "./js/auth.js";
-    import { addToCart } from "./js/cart.js";
-    import { money, escapeHtml, toast } from "./js/utils.js";
+<body class="bg-white text-black">
 
-    const id = new URLSearchParams(location.search).get("id");
-    const app = document.querySelector("#app");
 
-    function fallbackImage() {
-      return "assets/logo/thrifheads-logo.png";
+<!-- =====================================================
+HEADER
+===================================================== -->
+
+<header class="border-b sticky top-0 bg-white/95 backdrop-blur z-40">
+
+  <nav class="max-w-7xl mx-auto px-5 py-4 flex justify-between items-center">
+
+    <a
+      class="font-black text-xl"
+      href="index.html"
+    >
+      THRIFTHEADS®
+    </a>
+
+    <div class="flex gap-5 items-center">
+
+      <a href="shop.html">
+        Shop
+      </a>
+
+      <a href="account.html">
+        Account
+      </a>
+
+      <button
+        id="cartButton"
+        class="font-semibold"
+      >
+        Cart
+        <span
+          id="cartCount"
+          class="ml-1"
+        >
+          0
+        </span>
+      </button>
+
+    </div>
+
+  </nav>
+
+</header>
+
+
+<!-- =====================================================
+PRODUCT
+===================================================== -->
+
+<main
+  id="app"
+  class="max-w-7xl mx-auto px-5 py-12"
+>
+
+  <p>
+    Loading product...
+  </p>
+
+</main>
+
+
+
+<!-- =====================================================
+CART DRAWER BACKDROP
+===================================================== -->
+
+<div
+  id="cartBackdrop"
+  class="fixed inset-0 bg-black/50 z-50 hidden"
+></div>
+
+
+<!-- =====================================================
+CART DRAWER
+===================================================== -->
+
+<aside
+  id="cartDrawer"
+  class="fixed top-0 right-0 h-full w-full sm:w-[430px] bg-white z-[60] translate-x-full transition-transform duration-300 flex flex-col shadow-2xl"
+>
+
+  <!-- Drawer Header -->
+
+  <div
+    class="border-b px-6 py-5 flex justify-between items-center"
+  >
+
+    <h2 class="text-xl font-black">
+      YOUR CART
+    </h2>
+
+    <button
+      id="closeCart"
+      class="text-2xl leading-none"
+      aria-label="Close cart"
+    >
+      ×
+    </button>
+
+  </div>
+
+
+  <!-- Drawer Items -->
+
+  <div
+    id="drawerItems"
+    class="flex-1 overflow-y-auto p-6"
+  >
+
+    <p class="text-neutral-500">
+      Your cart is empty.
+    </p>
+
+  </div>
+
+
+  <!-- Drawer Footer -->
+
+  <div
+    class="border-t p-6"
+  >
+
+    <div
+      class="flex justify-between text-lg font-bold"
+    >
+
+      <span>
+        Subtotal
+      </span>
+
+      <span id="drawerSubtotal">
+        ₱0.00
+      </span>
+
+    </div>
+
+
+    <p class="text-xs text-neutral-500 mt-2">
+      Shipping is calculated during checkout.
+    </p>
+
+
+    <a
+      href="cart.html"
+      class="block text-center border border-black py-4 mt-5 font-bold"
+    >
+      VIEW CART
+    </a>
+
+
+    <a
+      href="checkout.html"
+      class="block text-center bg-black text-white py-4 mt-3 font-bold"
+    >
+      CHECKOUT
+    </a>
+
+  </div>
+
+</aside>
+
+
+
+<!-- =====================================================
+SCRIPT
+===================================================== -->
+
+<script type="module">
+
+import { supabase } from "./js/supabase.js";
+import { getUser } from "./js/auth.js";
+import { addToCart } from "./js/cart.js";
+import {
+  money,
+  escapeHtml,
+  toast
+} from "./js/utils.js";
+
+
+const id =
+  new URLSearchParams(location.search).get("id");
+
+
+const app =
+  document.querySelector("#app");
+
+
+const cartDrawer =
+  document.querySelector("#cartDrawer");
+
+
+const cartBackdrop =
+  document.querySelector("#cartBackdrop");
+
+
+const drawerItems =
+  document.querySelector("#drawerItems");
+
+
+const drawerSubtotal =
+  document.querySelector("#drawerSubtotal");
+
+
+const cartCount =
+  document.querySelector("#cartCount");
+
+
+/* =====================================================
+CART DRAWER
+===================================================== */
+
+function openCart() {
+
+  cartDrawer.classList.remove("translate-x-full");
+
+  cartBackdrop.classList.remove("hidden");
+
+  document.body.classList.add("overflow-hidden");
+
+}
+
+
+function closeCart() {
+
+  cartDrawer.classList.add("translate-x-full");
+
+  cartBackdrop.classList.add("hidden");
+
+  document.body.classList.remove("overflow-hidden");
+
+}
+
+
+document
+  .querySelector("#closeCart")
+  .addEventListener(
+    "click",
+    closeCart
+  );
+
+
+cartBackdrop.addEventListener(
+  "click",
+  closeCart
+);
+
+
+document
+  .querySelector("#cartButton")
+  .addEventListener(
+    "click",
+    openCart
+);
+
+
+/* =====================================================
+SUPABASE PRODUCT IMAGE
+===================================================== */
+
+function getProductImage(product) {
+
+  const images =
+    Array.isArray(product.product_images)
+      ? [...product.product_images]
+      : [];
+
+
+  if (!images.length) {
+    return null;
+  }
+
+
+  images.sort((a, b) => {
+
+    const primaryDifference =
+      Number(b.is_primary) -
+      Number(a.is_primary);
+
+
+    if (primaryDifference !== 0) {
+      return primaryDifference;
     }
 
-    async function loadProduct() {
-      if (!id) {
-        app.innerHTML = '<p class="text-lg">Product not found.</p>';
-        return;
+
+    return (
+      Number(a.sort_order || 0) -
+      Number(b.sort_order || 0)
+    );
+
+  });
+
+
+  let path =
+    images[0]?.storage_path;
+
+
+  if (!path) {
+    return null;
+  }
+
+
+  path =
+    String(path).trim();
+
+
+  /*
+  Already a complete URL
+  */
+
+  if (/^https?:\/\//i.test(path)) {
+    return path;
+  }
+
+
+  /*
+  Clean storage path
+  */
+
+  path =
+    path.replace(/^\/+/, "");
+
+
+  path =
+    path.replace(
+      /^product-images\//i,
+      ""
+    );
+
+
+  /*
+  Supabase Storage
+  */
+
+  const {
+    data
+  } =
+    supabase.storage
+      .from("product-images")
+      .getPublicUrl(path);
+
+
+  return data?.publicUrl || null;
+
+}
+
+
+/* =====================================================
+LOAD CART PREVIEW
+===================================================== */
+
+async function loadCartDrawer() {
+
+  const user =
+    await getUser();
+
+
+  if (!user) {
+
+    cartCount.textContent = "0";
+
+    drawerItems.innerHTML = `
+      <div class="text-center py-10">
+
+        <p class="text-neutral-500">
+          Sign in to view your cart.
+        </p>
+
+        <a
+          href="auth.html"
+          class="inline-block mt-5 bg-black text-white px-6 py-3 font-bold"
+        >
+          SIGN IN
+        </a>
+
+      </div>
+    `;
+
+    drawerSubtotal.textContent =
+      "₱0.00";
+
+    return;
+
+  }
+
+
+  /*
+  Get user's cart
+  */
+
+  const {
+    data: cart
+  } =
+    await supabase
+      .from("carts")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+
+  if (!cart) {
+
+    cartCount.textContent = "0";
+
+    drawerItems.innerHTML = `
+      <p class="text-neutral-500">
+        Your cart is empty.
+      </p>
+    `;
+
+    drawerSubtotal.textContent =
+      "₱0.00";
+
+    return;
+
+  }
+
+
+  /*
+  Get cart items
+  */
+
+  const {
+    data: items,
+    error
+  } =
+    await supabase
+      .from("cart_items")
+      .select(`
+        id,
+        quantity,
+        product_id,
+        products (
+          id,
+          name,
+          price,
+          product_images (
+            storage_path,
+            is_primary,
+            sort_order
+          )
+        )
+      `)
+      .eq("cart_id", cart.id);
+
+
+  if (error) {
+
+    console.error(
+      "Cart drawer error:",
+      error
+    );
+
+    drawerItems.innerHTML = `
+      <p class="text-red-600">
+        Unable to load cart.
+      </p>
+    `;
+
+    return;
+
+  }
+
+
+  if (!items || !items.length) {
+
+    cartCount.textContent = "0";
+
+    drawerItems.innerHTML = `
+      <p class="text-neutral-500">
+        Your cart is empty.
+      </p>
+    `;
+
+    drawerSubtotal.textContent =
+      "₱0.00";
+
+    return;
+
+  }
+
+
+  let subtotal = 0;
+
+  let totalQuantity = 0;
+
+
+  drawerItems.innerHTML =
+    items.map(item => {
+
+      const product =
+        item.products;
+
+
+      if (!product) {
+        return "";
       }
 
-      const { data: p, error } = await supabase
-        .from("products")
-        .select("*")
-        .eq("id", id)
-        .single();
 
-      if (error || !p) {
-        console.error("Product load error:", error);
-        app.innerHTML = '<p class="text-lg">Product not found.</p>';
-        return;
-      }
+      const quantity =
+        Number(item.quantity || 0);
 
-      const imageUrl = p.image_url || fallbackImage();
 
-      app.innerHTML = `
-        <div class="grid md:grid-cols-2 gap-10">
-          <div class="aspect-[4/5] bg-neutral-100 overflow-hidden">
-            <img
-              class="w-full h-full object-cover"
-              src="${escapeHtml(imageUrl)}"
-              alt="${escapeHtml(p.name)}"
-              onerror="this.src='${fallbackImage()}'"
-            >
+      const price =
+        Number(product.price || 0);
+
+
+      subtotal +=
+        price * quantity;
+
+
+      totalQuantity +=
+        quantity;
+
+
+      const image =
+        getProductImage(product);
+
+
+      return `
+
+        <div
+          class="flex gap-4 border-b pb-5 mb-5"
+        >
+
+          <div
+            class="w-24 h-28 bg-neutral-100 flex-shrink-0 overflow-hidden"
+          >
+
+            ${
+              image
+
+                ? `
+                  <img
+                    src="${image}"
+                    class="w-full h-full object-cover"
+                    alt="${escapeHtml(product.name)}"
+                  >
+                `
+
+                : `
+                  <div
+                    class="w-full h-full grid place-items-center text-xs text-neutral-400"
+                  >
+                    No image
+                  </div>
+                `
+            }
+
           </div>
 
-          <div class="py-4">
-            <p class="text-xs tracking-[.3em] uppercase">
-              ${escapeHtml(p.brand || "THRIFTHEADS")}
+
+          <div class="flex-1">
+
+            <p class="font-bold">
+              ${escapeHtml(product.name)}
             </p>
 
-            <h1 class="text-5xl font-black mt-3">
-              ${escapeHtml(p.name)}
-            </h1>
 
-            <p class="text-2xl mt-5">
-              ${money(p.price)}
+            <p class="text-sm text-neutral-500 mt-1">
+              ${money(price)}
             </p>
 
-            <div class="mt-8 space-y-2 text-sm">
-              <p><b>SKU:</b> ${escapeHtml(p.sku || "—")}</p>
-              <p><b>Size:</b> ${escapeHtml(p.size || "—")}</p>
-              <p><b>Condition:</b> ${escapeHtml((p.condition || "—").replaceAll("_", " "))}</p>
-              <p><b>Stock:</b> ${p.stock ?? 0}</p>
-            </div>
 
-            <p class="mt-8 text-neutral-600 leading-7">
-              ${escapeHtml(p.description || "A curated ThriftHeads piece.")}
+            <p class="text-sm mt-3">
+              Qty: ${quantity}
             </p>
 
-            <button
-              id="add"
-              class="mt-8 bg-black text-white px-8 py-4 uppercase tracking-wider font-bold disabled:opacity-40"
-              ${Number(p.stock) < 1 ? "disabled" : ""}
-            >
-              ${Number(p.stock) < 1 ? "Sold Out" : "Add to Cart"}
-            </button>
           </div>
+
         </div>
+
       `;
 
-      document.querySelector("#add")?.addEventListener("click", async () => {
-        const u = await getUser();
+    }).join("");
 
-        if (!u) {
-          location.href =
-            "auth.html?redirect=" + encodeURIComponent(location.href);
-          return;
+
+  cartCount.textContent =
+    totalQuantity;
+
+
+  drawerSubtotal.textContent =
+    money(subtotal);
+
+}
+
+
+/* =====================================================
+LOAD PRODUCT
+===================================================== */
+
+async function loadProduct() {
+
+  if (!id) {
+
+    app.innerHTML = `
+      <p class="text-lg">
+        Product not found.
+      </p>
+    `;
+
+    return;
+
+  }
+
+
+  /*
+  IMPORTANT:
+  Get product_images from Supabase.
+  */
+
+  const {
+    data: p,
+    error
+  } =
+    await supabase
+      .from("products")
+      .select(`
+        *,
+        product_images (
+          storage_path,
+          is_primary,
+          sort_order
+        )
+      `)
+      .eq("id", id)
+      .single();
+
+
+  if (error || !p) {
+
+    console.error(
+      "Product load error:",
+      error
+    );
+
+
+    app.innerHTML = `
+      <p class="text-lg">
+        Product not found.
+      </p>
+    `;
+
+    return;
+
+  }
+
+
+  const imageUrl =
+    getProductImage(p);
+
+
+  const stock =
+    Number(p.stock || 0);
+
+
+  const available =
+    stock > 0 &&
+    p.status === "active";
+
+
+  app.innerHTML = `
+
+    <div
+      class="grid md:grid-cols-2 gap-10"
+    >
+
+
+      <!-- PRODUCT IMAGE -->
+
+      <div
+        class="aspect-[4/5] bg-neutral-100 overflow-hidden"
+      >
+
+        ${
+          imageUrl
+
+            ? `
+              <img
+                class="w-full h-full object-cover"
+                src="${imageUrl}"
+                alt="${escapeHtml(p.name)}"
+
+                onerror="
+                  this.style.display='none';
+                  this.parentElement.innerHTML='<div class=&quot;w-full h-full grid place-items-center text-neutral-400&quot;>Image unavailable</div>';
+                "
+              >
+            `
+
+            : `
+              <div
+                class="w-full h-full grid place-items-center text-neutral-400"
+              >
+                No image
+              </div>
+            `
         }
+
+      </div>
+
+
+      <!-- PRODUCT INFORMATION -->
+
+      <div class="py-4">
+
+        <p
+          class="text-xs tracking-[.3em] uppercase"
+        >
+          ${escapeHtml(
+            p.brand || "THRIFTHEADS"
+          )}
+        </p>
+
+
+        <h1
+          class="text-5xl font-black mt-3"
+        >
+          ${escapeHtml(p.name)}
+        </h1>
+
+
+        <p
+          class="text-2xl mt-5"
+        >
+          ${money(p.price)}
+        </p>
+
+
+        <div
+          class="mt-8 space-y-2 text-sm"
+        >
+
+          <p>
+            <b>SKU:</b>
+            ${escapeHtml(p.sku || "—")}
+          </p>
+
+          <p>
+            <b>Size:</b>
+            ${escapeHtml(p.size || "—")}
+          </p>
+
+          <p>
+            <b>Condition:</b>
+            ${escapeHtml(
+              (p.condition || "—")
+                .replaceAll("_", " ")
+            )}
+          </p>
+
+          <p>
+            <b>Stock:</b>
+            ${stock}
+          </p>
+
+        </div>
+
+
+        <p
+          class="mt-8 text-neutral-600 leading-7"
+        >
+          ${escapeHtml(
+            p.description ||
+            "A curated ThriftHeads piece."
+          )}
+        </p>
+
+
+        ${
+          available
+
+            ? `
+
+              <div
+                class="mt-8 flex flex-col sm:flex-row gap-3"
+              >
+
+                <!-- ADD TO CART -->
+
+                <button
+                  id="add"
+                  class="bg-black text-white px-8 py-4 uppercase tracking-wider font-bold flex-1"
+                >
+                  ADD TO CART
+                </button>
+
+
+                <!-- BUY NOW -->
+
+                <button
+                  id="buyNow"
+                  class="border border-black px-8 py-4 uppercase tracking-wider font-bold flex-1"
+                >
+                  BUY NOW
+                </button>
+
+              </div>
+
+            `
+
+            : `
+
+              <button
+                disabled
+                class="mt-8 bg-neutral-300 text-neutral-600 px-8 py-4 uppercase tracking-wider font-bold"
+              >
+                ${
+                  p.status === "reserved"
+                    ? "RESERVED"
+                    : "SOLD OUT"
+                }
+              </button>
+
+            `
+        }
+
+      </div>
+
+    </div>
+
+  `;
+
+
+  /* ===================================================
+  ADD TO CART
+  =================================================== */
+
+  document
+    .querySelector("#add")
+    ?.addEventListener(
+      "click",
+      async () => {
+
+        const user =
+          await getUser();
+
+
+        if (!user) {
+
+          location.href =
+            "auth.html?redirect=" +
+            encodeURIComponent(
+              location.href
+            );
+
+          return;
+
+        }
+
 
         try {
-          await addToCart(u.id, p.id, 1);
-          toast("Added to cart");
-        } catch (e) {
-          console.error(e);
-          toast(e.message || "Unable to add to cart", "error");
-        }
-      });
-    }
 
-    loadProduct();
-  </script>
+          await addToCart(
+            user.id,
+            p.id,
+            1
+          );
+
+
+          toast(
+            "Added to cart"
+          );
+
+
+          /*
+          Refresh drawer
+          */
+
+          await loadCartDrawer();
+
+
+          /*
+          Open drawer
+          */
+
+          openCart();
+
+
+        } catch (e) {
+
+          console.error(e);
+
+          toast(
+            e.message ||
+            "Unable to add to cart",
+            "error"
+          );
+
+        }
+
+      }
+    );
+
+
+  /* ===================================================
+  BUY NOW
+  =================================================== */
+
+  document
+    .querySelector("#buyNow")
+    ?.addEventListener(
+      "click",
+      async () => {
+
+        const user =
+          await getUser();
+
+
+        if (!user) {
+
+          location.href =
+            "auth.html?redirect=" +
+            encodeURIComponent(
+              location.href
+            );
+
+          return;
+
+        }
+
+
+        try {
+
+          /*
+          Add this product to cart.
+          Your existing checkout system
+          creates the order from the cart.
+          */
+
+          await addToCart(
+            user.id,
+            p.id,
+            1
+          );
+
+
+          /*
+          Go directly to checkout.
+          */
+
+          location.href =
+            "checkout.html";
+
+
+        } catch (e) {
+
+          console.error(e);
+
+          toast(
+            e.message ||
+            "Unable to continue to checkout",
+            "error"
+          );
+
+        }
+
+      }
+    );
+
+}
+
+
+/* =====================================================
+INITIALIZE
+===================================================== */
+
+await loadProduct();
+
+await loadCartDrawer();
+
+</script>
+
 </body>
 </html>
